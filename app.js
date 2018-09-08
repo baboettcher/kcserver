@@ -20,7 +20,7 @@ app.get("/users", function(req, res, next) {
 });
 
 app.listen(process.env.port || 4444, () => {
-  console.log("Now listening for Kidcoin3 requests on port 4444!!");
+  console.log("Escuchando requests on port 4444!!");
 });
 
 // options passed due to error. solution here:
