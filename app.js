@@ -6,6 +6,7 @@ const cors = require("cors");
 
 const app = express();
 
+let num = 0;
 // middleware
 // allow cross-origin requests
 app.use(cors());
@@ -15,12 +16,13 @@ const router = express.Router();
 app.get("/users", function(req, res, next) {
   /*   res.json([{ id: 1, username: "samantha" }, { id: 2, username: "willy" }]);
  */
-  console.log("USER");
-  res.send([{ 1: "She had rings on her fingers" }]);
+  num++;
+  console.log("GET REQUEST RECEIEVED", num);
+  res.send([{ 1: "Saw my baby down by the riverside" }]);
 });
 
 app.listen(process.env.port || 4444, () => {
-  console.log("Escuchando requests on port 4444!!");
+  console.log("Escuchando TODO requests on port 4444!!");
 });
 
 // options passed due to error. solution here:
