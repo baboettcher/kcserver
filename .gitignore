@@ -24,3 +24,7 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+zzz_notes.js
+api.js
+models/ninja.js
