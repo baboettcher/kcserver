@@ -2,11 +2,37 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 // mini schema test
-const StudentMiniSchema = new Schema({
-  first_name: String,
-  last_name: String,
-  uid: String
+
+const TeacherSchema = new Schema({
+  first_name: {
+    type: String,
+    required: [true, "first_name field is required"]
+  },
+  last_name: {
+    type: String,
+    required: [true, "last_name field is required"]
+  },
+  fb_uid: {
+    type: String,
+    required: [true, "fb_uid field is required"]
+  },
+  email: {
+    type: String,
+    required: [true, "email field is required"]
+  },
+
+  school_name: {
+    type: String,
+    required: [true, "school_name is required"]
+  },
+  current_students: {
+    type: Array // update later - array of objects
+  } //
 });
+
+const Teacher = mongoose.model("teacher", TeacherSchema);
+
+module.exports = Teacher;
 
 /*  TeacherSchema:
 
@@ -25,25 +51,3 @@ const StudentMiniSchema = new Schema({
       - differeniate between teachers and classes, allowing students to have multiple teachers
 
 */
-
-const TeacherSchema = new Schema({
-  first_name: {
-    type: String,
-    required: [true, "first_name field is required"]
-  },
-  last_name: {
-    type: String,
-    required: [true, "last_name field is required"]
-  },
-  school_uid: {
-    type: String,
-    required: [true, "school_id is required"]
-  },
-  school_name: String,
-
-  student_mini_records: [StudentMiniSchema]
-});
-
-const Teacher = mongoose.model("teacher", TeacherSchema);
-
-module.exports = Teacher;

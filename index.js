@@ -16,9 +16,6 @@ app.use(express.static("public"));
 // use body-parser middleware
 app.use(bodyParser.json());
 
-// initialize routes
-app.use("/api", require("./routes/api"));
-
 app.use("/users", require("./routes/users"));
 
 // error handling middleware - home grown
