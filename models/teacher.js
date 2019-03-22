@@ -27,6 +27,9 @@ const TeacherSchema = new Schema({
   },
   current_students: {
     type: Array // update later - array of objects
+  }, //
+  current_classes: {
+    type: Array // update later - array of objects
   } //
 });
 

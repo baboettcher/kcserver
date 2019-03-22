@@ -1,4 +1,5 @@
 const express = require("express");
+var generatePassword = require("password-generator");
 const router = express.Router();
 const District = require("../models/district");
 const School = require("../models/school");
@@ -6,10 +7,11 @@ const Teacher = require("../models/teacher");
 const Student = require("../models/student");
 const Super = require("../models/super");
 
-// ----- POST ----- //
 // review need/purpose of "next" as middleware
 
+// ----- POST ----- //
 router.post("/addteacher", function(req, res, next) {
+  console.log(req.body);
   Teacher.create(req.body)
     .then(function(teacher_resp) {
       res.send(teacher_resp);
@@ -246,7 +248,30 @@ router.get("/school_record_v2", function(req, res, next) {
 
 // ----- PUT / DELETE ----- //
 
-// #1 original - works fine for generic updating records
+/* 
+ Add 
+ { "6DIGITCODEFORCLASS" : {
+  subject: English,
+  numberOfStudent: 90,
+  students: [ "sdfsdff", "sdfsdfsdf", "Sdfsfsd"]
+}}
+
+ */
+
+router.put("/teacher_add_class/:id", function(req, res, next) {
+  console.log(req.body);
+
+  Teacher.findByIdAndUpdate({ _id: req.params.id }, req.body)
+    .then(function() {
+      Teacher.findOne({ _id: req.params.id }).then(function(updatedTeacher) {
+        res.send(updatedTeacher);
+      });
+    })
+    .catch(function(err) {
+      err;
+    });
+});
+
 router.put("/teacher/:id", function(req, res, next) {
   Teacher.findByIdAndUpdate({ _id: req.params.id }, req.body)
     .then(function() {
