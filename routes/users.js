@@ -260,6 +260,7 @@ router.get("/school_record_v2", function(req, res, next) {
 
 router.put("/teacher_add_class/:id", function(req, res, next) {
   console.log(req.body);
+  console.log("req.params.id ==>", req.params.id);
 
   Teacher.findByIdAndUpdate({ _id: req.params.id }, req.body)
     .then(function() {
@@ -268,7 +269,7 @@ router.put("/teacher_add_class/:id", function(req, res, next) {
       });
     })
     .catch(function(err) {
-      err;
+      console.log("ERROR🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘", err);
     });
 });
 
