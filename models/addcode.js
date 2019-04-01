@@ -2,11 +2,11 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const AddCodeSchema = new Schema({
-  code: {
+  join_code: {
     type: String,
     required: [true, "code field is required"]
   },
-  grade: {
+  grade_level: {
     type: String,
     required: [true, "grade field is required"]
   },

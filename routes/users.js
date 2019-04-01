@@ -1,15 +1,31 @@
 const express = require("express");
-var generatePassword = require("password-generator");
 const router = express.Router();
+
 const District = require("../models/district");
 const School = require("../models/school");
 const Teacher = require("../models/teacher");
 const Student = require("../models/student");
 const Super = require("../models/super");
+const AddCode = require("../models/addcode");
 
 // review need/purpose of "next" as middleware
 
 // ----- POST ----- //
+
+// april
+router.post("/save_new_addcode", function(req, res, next) {
+  console.log("-----=====> current classes", req.body.current_classes);
+  const mostRecentlyAddedClass =
+    req.body.current_classes[req.body.current_classes.length - 1];
+  console.log("mostRecentlyAddedClass-->", mostRecentlyAddedClass);
+  AddCode.create(mostRecentlyAddedClass)
+    .then(function(addcode_resp) {
+      console.log("-----====== SUCCESS ======-----");
+      res.send(addcode_resp);
+    })
+    .catch(next);
+});
+
 router.post("/addteacher", function(req, res, next) {
   console.log(req.body);
   Teacher.create(req.body)
@@ -62,12 +78,6 @@ router.post("/teacher_2", function(req, res, next) {
     })
 
       .then(schoolRecordBundle => {
-        console.log("------------------ SCHOOL RECORD -----------------------");
-        console.log(schoolRecordBundle);
-
-        console.log(
-          "------------------ CLEANED UP TEACHER -----------------------"
-        );
         // clean up teacher object
         const cleanedUpTeacher = {
           uid: teacher._id.toString(),

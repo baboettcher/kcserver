@@ -22,7 +22,7 @@ app.use("/users", require("./routes/users"));
 app.use(function(err, req, res, next) {
   //console.log("middle ware error: ", err);
   res.status(422).send({
-    "little-old-error": err.message
+    "OOPS! Server side error": err.message
   });
 });
 
