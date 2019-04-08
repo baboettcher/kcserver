@@ -18,6 +18,10 @@ const AddCodeSchema = new Schema({
     type: String,
     required: [true, "teacher_id field is required"]
   },
+  teacher_name: {
+    type: String,
+    required: [true, "teacher_name field is required"]
+  }, // later get this from id
   special_notes: {
     type: String
   },

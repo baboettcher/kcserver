@@ -26,7 +26,7 @@ const TeacherSchema = new Schema({
     required: [true, "school_name is required"]
   },
   current_students: {
-    type: Array // update later - array of objects
+    type: Array // LATER: chron job eventually updates in every tecaher record automaticlly for changes in student records
   }, //
   current_classes: {
     type: Array // update later - array of objects

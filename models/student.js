@@ -39,21 +39,36 @@ const StudentSchema = new Schema({
     type: String,
     required: [true, "last_name field is required"]
   },
-  school_uid: {
+  fb_uid: {
     type: String,
-    required: [true, "school_id is required"]
+    required: [true, "fb_uid field is required"]
   },
-  school: String,
-  teacher_uids: {
-    type: Array,
-    required: [true, "one or more teacher_ids is required"]
+  email: {
+    type: String,
+    required: [true, "email field is required"]
   },
-  teachers: Array,
-  credits: {
-    type: Number,
-    default: 1
+  current_classes: {
+    type: Array // array of objects:
   },
-  academic_record: AcademicRecordSchema
+  /* 
+  { 
+    class_uid : "98ehj0a0j"
+    classTeacher: "Mr. Bill",
+    classTitle: "The Wild Students of Room 14"
+  }
+  */
+
+  current_groups: {
+    type: Array // array of objects:
+  }
+  /* 
+    { 
+      group_uid : "lzdvldjf"
+      group_title: "Bobcats"
+      arrangementTopic: "Math"
+      teacher: "Mr. Lozada"
+    }
+   */
 });
 
 const Student = mongoose.model("student", StudentSchema);
