@@ -25,7 +25,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-zzz_notes.js
+zzz_bin/
+
 api.js
 models/ninja.js
 models/mongoSketches.js
