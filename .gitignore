@@ -27,6 +27,3 @@ yarn-error.log*
 
 zzz_bin/
 
-api.js
-models/ninja.js
-models/mongoSketches.js

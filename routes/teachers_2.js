@@ -4,16 +4,13 @@ const express = require("express");
 const Teacher = require("../models/teacher_model");
 const router = express.Router();
 
-router.get("/:blabla", async (req, res) => {
-  console.log(
-    "✅✅✅TEACHER DASH REQUESTED ✅✅✅ why is req.query is empty??-->",
-    req.query
-  );
+router.get("/:fb_uid", async (req, res) => {
+  console.log("✅✅✅TEACHER DASH REQUESTED ✅✅✅  req.params-->", req.params);
 
-  const teacher = await Teacher.findOne(req.query);
+  const teacher = await Teacher.find(req.params);
   if (!teacher) {
     console.log("❌❌ No teacher found ❌❌");
-    return res.status(404).send("Teacher with the given ID was not found.");
+    return res.status(404).send("Teacher with the given fb_uid was not found.");
   }
   res.send(teacher);
 });

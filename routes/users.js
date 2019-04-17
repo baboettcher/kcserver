@@ -3,7 +3,7 @@ const router = express.Router();
 
 const District = require("../models/district");
 const School = require("../models/school");
-const Teacher = require("../models/teacher");
+const Teacher = require("../zzz_bin/xxteacher");
 const Student = require("../models/student");
 const Super = require("../models/super");
 const AddCode = require("../models/addcode");
