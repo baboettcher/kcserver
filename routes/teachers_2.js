@@ -17,8 +17,7 @@ router.get("/:fb_uid", async (req, res) => {
 
 router.post("/", async (req, res) => {
   const { error } = validateTeacher(req.body);
-  console.log("--- TEACHER POSR ERROR---", error);
-  if (error) return res.status(400).send("OOPA-->" + error.details[0].message);
+  if (error) return res.status(400).send(error.details[0].message);
   let teacher = new Teacher(req.body);
   teacher = await teacher.save();
   res.send(teacher);
@@ -26,16 +25,23 @@ router.post("/", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   const { error } = validateTeacher(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-  const teacher = await Teacher.findByIdAndUpdate(
-    req.params.id,
-    { first_name: req.body.first_name },
-    {
-      new: true
-    }
-  );
-  if (!teacher)
-    return res.status(404).send("first_name with the given ID was not found.");
+  if (error) {
+    console.log(
+      "❌❌ Problem validating  record ❌❌",
+      error.details[0].message
+    );
+    return res.status(400).send(error.details[0].message);
+  }
+
+  const teacher = await Teacher.findByIdAndUpdate(req.params.id, req.body, {
+    new: true
+  });
+
+  if (!teacher) {
+    console.log("❌❌ Problem updating record ❌❌");
+    return res.status(404).send("Updating teacher record error");
+  }
+
   res.send(teacher);
 });
 

@@ -40,7 +40,7 @@ const TeacherSchema = new Schema({
   current_groups: {
     type: Array // array of objects:
   },
-  current_student: {
+  current_students: {
     type: Array // array of objects:
   }
 });
