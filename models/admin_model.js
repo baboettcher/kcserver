@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const TeacherSchema = new Schema({
+const AdminSchema = new Schema({
   first_name: {
     type: String,
     required: [true, "first_name field is required,  1 to 50 char"],
@@ -25,26 +25,21 @@ const TeacherSchema = new Schema({
     type: String,
     required: [true, "valid email required"]
   },
-
+  state: String,
   school_name: String,
+  district_name: String
 
-  new_class: {
+  /*   school_uid: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "addcode" // name of target collection (or AddCode?)
-  },
+    ref: "school"
+  }, */
 
-  current_classes: {
-    type: Array // array of objects:
-  },
-
-  current_groups: {
-    type: Array // array of objects:
-  },
-  current_student: {
-    type: Array // array of objects:
-  }
+  /*   district_uid: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "district"
+  }, */
 });
 
-const Teacher = mongoose.model("teacher", TeacherSchema);
+const Admin = mongoose.model("admin", AdminSchema);
 
-module.exports = Teacher;
+module.exports = Admin;

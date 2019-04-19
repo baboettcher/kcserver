@@ -4,24 +4,30 @@ const express = require("express");
 const Student = require("../models/student_model");
 const router = express.Router();
 
-router.get("/:anything", async (req, res) => {
-  console.log(
-    "🆔🆔🆔🆔🆔 STUDENT DASH REQUESTED 🆔🆔🆔🆔🆔 why is req.query is empty??-->",
-    req.query
-  );
-  const teacher = await Teacher.findOne(req.query);
-  const student = await Student.findById(req.params.id);
+router.get("/:fb_uid", async (req, res) => {
+  console.log("🆔🆔🆔🆔🆔 STUDENT DASH REQUESTED 🆔🆔🆔🆔🆔", req.params);
+
+  const student = await Student.find(req.params);
   if (!student) {
-    console.log("❌❌ Student not found ❌❌");
-    return res.status(404).send("Student with the given ID was not found.");
+    console.log("❌❌ No student found with fb_uid:", req.params.fb_uid);
+    return res
+      .status(404)
+      .send("Student not found w/ fb_uid ", req.params.fb_uid);
   }
   res.send(student);
 });
 
 router.post("/", async (req, res) => {
   const { error } = validateStudent(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-  let student = new Student({ first_name: req.body.first_name });
+  if (error) {
+    console.log(
+      "💩💩💩 Server error; student post: ",
+      error.details[0].message
+    );
+    return res.status(400).send(error.details[0].message);
+  }
+
+  let student = new Student(req.body);
   student = await student.save();
   res.send(student);
 });
@@ -55,9 +61,15 @@ router.get("/", async (req, res) => {
 
 function validateStudent(student) {
   const schema = {
-    first_name: Joi.string()
-      .min(3)
-      .required()
+    first_name: Joi.string().required(),
+    last_name: Joi.string().required(),
+    fb_uid: Joi.string().required(),
+    email: Joi.string().email({ minDomainAtoms: 2 }),
+    school_name: Joi.string().allow(""),
+    new_class_code: Joi.string().allow(""),
+    /*  new_class: Joi.string(), */
+    current_classes: Joi.array(),
+    current_groups: Joi.array()
   };
   return Joi.validate(student, schema);
 }

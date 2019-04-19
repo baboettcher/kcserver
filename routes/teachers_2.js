@@ -17,9 +17,8 @@ router.get("/:fb_uid", async (req, res) => {
 
 router.post("/", async (req, res) => {
   const { error } = validateTeacher(req.body);
-  console.log("---POSTED, ERROR---", error);
+  console.log("--- TEACHER POSR ERROR---", error);
   if (error) return res.status(400).send("OOPA-->" + error.details[0].message);
-  //let teacher = new Teacher({ first_name: req.body.first_name });
   let teacher = new Teacher(req.body);
   teacher = await teacher.save();
   res.send(teacher);
@@ -53,15 +52,14 @@ router.get("/", async (req, res) => {
   res.send(teachers);
 });
 
-// Is joi needed?
 function validateTeacher(teacher) {
   const schema = {
     first_name: Joi.string().required(),
     last_name: Joi.string().required(),
     fb_uid: Joi.string().required(),
     email: Joi.string().email({ minDomainAtoms: 2 }),
-    new_class: Joi.string(),
-    school_name: Joi.string(),
+    school_name: Joi.string().allow(""),
+    new_class: Joi.string().allow(""),
     current_classes: Joi.array(),
     current_groups: Joi.array(),
     current_students: Joi.array()

@@ -24,6 +24,7 @@ app.use(bodyParser.json());
 //app.use("/users", require("./routes/users"));
 app.use("/student", require("./routes/students_2"));
 app.use("/teacher", require("./routes/teachers_2"));
+app.use("/admin", require("./routes/admins_2"));
 
 // error handling middleware - home grown
 app.use(function(err, req, res, next) {
