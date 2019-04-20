@@ -1,5 +1,4 @@
 const Joi = require("joi");
-//const mongoose = require("mongoose");
 const express = require("express");
 const Teacher = require("../models/teacher_model");
 const router = express.Router();
