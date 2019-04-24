@@ -28,7 +28,7 @@ router.put("/:id", async (req, res) => {
   const { error } = validateAddCode(req.body);
   if (error) {
     console.log(
-      "❌❌ Problem validating  record ❌❌",
+      "❌❌ Problem validating record ❌❌",
       error.details[0].message
     );
     return res.status(400).send(error.details[0].message);

@@ -22,11 +22,47 @@ router.post("/", async (req, res) => {
   res.send(teacher);
 });
 
+router.put("/addclass/:id", async (req, res) => {
+  console.log("------the REQ.BODY--> ADD CLASS>>>>", req.body);
+  // const { error } = validateTeacher(req.body);
+  // if (error) {
+  //   console.log(
+  //     "❌❌ Problem validating teacher record ❌❌",
+  //     error.details[0].message
+  //   );
+  //   return res.status(400).send(error.details[0].message);
+
+  const teacher = await Teacher.findByIdAndUpdate(
+    { _id: req.params.id },
+    { $push: { current_classes: req.body } }
+  ); //  { new: true }
+
+  if (!teacher) {
+    console.log("❌❌ Problem addding class to teacher record ❌❌");
+    return res.status(404).send("Updating teacher record error");
+  }
+
+  // Friend.findOneAndUpdate(
+  //   { _id: req.body.id },
+  //   { $push: { friends: objFriends  } },
+  //   function (error, success) {
+  //     if (error) {
+  //       console.log(error);
+  //     } else {
+  //       console.log(success);
+  //     }
+  //   });
+  //   )
+
+  res.status(200).send("all good");
+});
+
 router.put("/:id", async (req, res) => {
+  console.log("----->>>>", req.body);
   const { error } = validateTeacher(req.body);
   if (error) {
     console.log(
-      "❌❌ Problem validating  record ❌❌",
+      "❌❌ Problem validating teacher record ❌❌",
       error.details[0].message
     );
     return res.status(400).send(error.details[0].message);
