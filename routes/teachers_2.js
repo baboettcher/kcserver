@@ -23,7 +23,7 @@ router.post("/", async (req, res) => {
 });
 
 router.put("/addclass/:id", async (req, res) => {
-  console.log("------the REQ.BODY--> ADD CLASS>>>>", req.body);
+  console.log("Class to push:", req.body);
   // const { error } = validateTeacher(req.body);
   // if (error) {
   //   console.log(
@@ -38,21 +38,10 @@ router.put("/addclass/:id", async (req, res) => {
   ); //  { new: true }
 
   if (!teacher) {
+    console.log("teacher-->", teacher);
     console.log("❌❌ Problem addding class to teacher record ❌❌");
     return res.status(404).send("Updating teacher record error");
   }
-
-  // Friend.findOneAndUpdate(
-  //   { _id: req.body.id },
-  //   { $push: { friends: objFriends  } },
-  //   function (error, success) {
-  //     if (error) {
-  //       console.log(error);
-  //     } else {
-  //       console.log(success);
-  //     }
-  //   });
-  //   )
 
   res.status(200).send("all good");
 });
