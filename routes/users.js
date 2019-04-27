@@ -6,7 +6,7 @@ const School = require("../models/school");
 const Teacher = require("../zzz_bin/xxteacher");
 const Student = require("../models/student");
 const Super = require("../models/super");
-const AddCode = require("../models/addcode");
+const AddCode = require("../models/joincode");
 
 // ----- POST ----- //
 

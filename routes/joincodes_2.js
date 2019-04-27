@@ -24,7 +24,7 @@ router.post("/", async (req, res) => {
   if (error) return res.status(400).send(error.details[0].message);
   let joincode = new JoinCode(req.body);
   joincode = await joincode.save();
-  res.send(joincode);
+  res.status(200).send(joincode);
 });
 
 /* router.put("/:id", async (req, res) => {

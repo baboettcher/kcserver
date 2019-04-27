@@ -18,10 +18,11 @@ router.get("/:fb_uid", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
+  console.log("======= req.body--> ", req.body);
   const { error } = validateStudent(req.body);
   if (error) {
     console.log(
-      "💩💩💩 Server error; student post: ",
+      "💩💩💩 Server error; student post 💩💩💩 ",
       error.details[0].message
     );
     return res.status(400).send(error.details[0].message);

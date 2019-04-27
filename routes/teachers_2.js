@@ -43,7 +43,7 @@ router.put("/addclass/:id", async (req, res) => {
     return res.status(404).send("Updating teacher record error");
   }
 
-  res.status(200).send("all good");
+  res.status(200).send(req.body);
 });
 
 router.put("/:id", async (req, res) => {
