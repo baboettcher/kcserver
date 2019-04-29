@@ -3,23 +3,18 @@ const express = require("express");
 const JoinCode = require("../models/joincode_model");
 const router = express.Router();
 
-/* 
-router.get("/:_joincode", async (req, res) => {
+router.get("/:join_code", async (req, res) => {
   console.log("🚹🚹🚹ADDCODE 🚹🚹🚹 req.params-->", req.params);
-
   const joincode = await JoinCode.find(req.params);
   if (!joincode) {
     console.log("❌❌ No joincode found ❌❌");
-    return res
-      .status(404)
-      .send("JoinCode with the given _joincode was not found.");
+    return res.status(404).send("joincode was not found.");
   }
-  res.send(joincode);
-}); 
-*/
+  res.status(200).send(joincode);
+});
 
 router.post("/", async (req, res) => {
-  console.log("🚹🚹🚹 JOIN POSTED 🚹🚹🚹");
+  console.log("🚹 JOINCODE POSTED ");
   const { error } = validateJoinCode(req.body);
   if (error) return res.status(400).send(error.details[0].message);
   let joincode = new JoinCode(req.body);
