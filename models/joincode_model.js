@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const AddCodeSchema = new Schema({
+const JoinCodeSchema = new Schema({
   join_code: {
     type: String,
     required: [true, "join_code field is required"]
@@ -14,14 +14,31 @@ const AddCodeSchema = new Schema({
     type: String,
     required: [true, "class_description field is required"]
   },
+
   teacher_name: {
     type: String,
     required: [true, "teacher_name field is required"]
   }, // later get this from id
+
   teacher_id: {
     type: String,
     required: [true, "teacher_id field is required"]
   },
+
+  students_tentative_ids: {
+    type: Array
+  },
+  students_tentative_cache: {
+    type: Array
+  },
+
+  students_confirmed_ids: {
+    type: Array
+  },
+  students_confirmed_cache: {
+    type: Array
+  },
+
   school_name: {
     type: String
   }, // later get this from id
@@ -39,6 +56,6 @@ const AddCodeSchema = new Schema({
   }
 });
 
-const AddCode = mongoose.model("addcode", AddCodeSchema);
+const JoinCode = mongoose.model("addcode", JoinCodeSchema);
 
-module.exports = AddCode;
+module.exports = JoinCode;

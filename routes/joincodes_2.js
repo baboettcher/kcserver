@@ -4,9 +4,8 @@ const JoinCode = require("../models/joincode_model");
 const router = express.Router();
 
 router.get("/:join_code", async (req, res) => {
-  console.log("🚹🚹🚹ADDCODE 🚹🚹🚹 req.params-->", req.params);
   const joincode = await JoinCode.find(req.params);
-  if (!joincode) {
+  if (!joincode || !joincode[0]) {
     console.log("❌❌ No joincode found ❌❌");
     return res.status(404).send("joincode was not found.");
   }
@@ -14,7 +13,7 @@ router.get("/:join_code", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  console.log("🚹 JOINCODE POSTED ");
+  console.log("🚹 JOINCODE POSTED 🚹 ");
   const { error } = validateJoinCode(req.body);
   if (error) return res.status(400).send(error.details[0].message);
   let joincode = new JoinCode(req.body);
@@ -22,28 +21,34 @@ router.post("/", async (req, res) => {
   res.status(200).send(joincode);
 });
 
-/* router.put("/:id", async (req, res) => {
-  const { error } = validateJoinCode(req.body);
-  if (error) {
-    console.log(
-      "❌❌ Problem validating record ❌❌",
-      error.details[0].message
-    );
-    return res.status(400).send(error.details[0].message);
-  }
+router.put("/:id", async (req, res) => {
+  console.log("🚹🚹🚹 JOINCODE PUT 🚹🚹🚹 ");
+  // console.log("Student to push", req.body);
+  // console.log("req.params.id", req.params.id);
 
-  const joincode = await JoinCode.findByIdAndUpdate(req.params.id, req.body, {
-    new: true
-  });
+  const joincode = await JoinCode.findByIdAndUpdate(
+    { _id: req.params.id },
+    {
+      $push: {
+        students_tentative_ids: req.body._id,
+        students_tentative_cache: {
+          _id: req.body._id,
+          first_name: req.body.first_name,
+          last_name: req.body.last_name
+        }
+      }
+    }
+  );
 
   if (!joincode) {
     console.log("❌❌ Problem updating record ❌❌");
     return res.status(404).send("Updating joincode record error");
   }
 
+  console.log("🦑🦑🦑 SUCCESS 🦑🦑🦑 ");
   res.send(joincode);
 });
- */
+
 /* router.delete("/:id", async (req, res) => {
   const joincode = await JoinCode.findByIdAndRemove(req.params.id);
   if (!joincode)
@@ -64,6 +69,9 @@ function validateJoinCode(joincode) {
     class_description: Joi.string().required(),
     teacher_name: Joi.string().required(),
     teacher_id: Joi.string().required(),
+
+    students_tentative: Joi.array(),
+    students_confirmed: Joi.array(),
 
     school_name: Joi.string().allow(""),
     school_id: Joi.string().allow(""),

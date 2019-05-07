@@ -5,8 +5,6 @@ const Student = require("../models/student_model");
 const router = express.Router();
 
 router.get("/:fb_uid", async (req, res) => {
-  console.log("🆔🆔🆔🆔🆔 STUDENT DASH REQUESTED 🆔🆔🆔🆔🆔", req.params);
-
   const student = await Student.find(req.params);
   if (!student) {
     console.log("❌❌ No student found with fb_uid:", req.params.fb_uid);
@@ -18,7 +16,6 @@ router.get("/:fb_uid", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  console.log("======= req.body--> ", req.body);
   const { error } = validateStudent(req.body);
   if (error) {
     console.log(
@@ -33,6 +30,46 @@ router.post("/", async (req, res) => {
   res.send(student);
 });
 
+// pushes new class to tentative classes
+router.put("/addtentativeclass/:id", async (req, res) => {
+  console.log("🆔🆔🆔 STUDENT PUT - ADD TENTATIVE CLASS  🆔🆔🆔", req.params);
+
+  // const { error } = validateStudent(req.body);
+  // if (error) return res.status(400).send(error.details[0].message);
+  // const student = await Student.findByIdAndUpdate(
+  //   req.params.id,
+  //   { first_name: req.body.first_name },
+  //   {
+  //     new: true
+  //   }
+  // );
+  // if (!student) console.log("❌❌ Problem validating newclass/addcode ❌❌");
+  //return res.status(404).send("first_name with the given ID was not found.");
+  const student = await Student.findByIdAndUpdate(
+    { _id: req.params.id },
+    {
+      $push: {
+        current_classes: req.body._id
+      }
+    }
+  );
+
+  if (!student) {
+    console.log("❌❌ Problem updating record ❌❌");
+    return res.status(404).send("Updating joincode record error");
+  }
+
+  console.log("🐡🐡🐡 SUCCESS PUSHING TO STUDENT 🐡🐡🐡 ");
+  res.send(student);
+});
+
+// NEXT #1:
+// if teacher rejects, remove class from tentative_classes and add message to message_to_user { text: blabla, sender: teacherUID}
+
+// NEXT #2:
+// after teacher confirms, push new class to confirmed_classes
+
+// is this route still used?
 router.put("/:id", async (req, res) => {
   const { error } = validateStudent(req.body);
   if (error) return res.status(400).send(error.details[0].message);
