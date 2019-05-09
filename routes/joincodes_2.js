@@ -23,9 +23,17 @@ router.post("/", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   console.log("🚹🚹🚹 JOINCODE PUT 🚹🚹🚹 ");
-  // console.log("Student to push", req.body);
-  // console.log("req.params.id", req.params.id);
 
+  const checkId = await JoinCode.findById(req.params.id);
+  if (checkId.students_tentative_ids.includes(req.body._id)) {
+    console.log("--->> FOUND IN: students_tentative_ids <<----");
+    return res.status(404).send(checkId);
+  }
+
+  // REFACTOR to limit db calls
+  // - push req.body._id to students_tentative_id
+  // - push the object  to students_tentative_cache
+  // .save()
   const joincode = await JoinCode.findByIdAndUpdate(
     { _id: req.params.id },
     {
