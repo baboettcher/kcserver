@@ -33,16 +33,20 @@ const StudentSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "addcode" // name of target collection (or AddCode?)
   }, */
-  current_classes: {
+
+  current_classes_ids: {
     type: Array // array of objects:
   },
-  /* 
-  { 
-    class_uid : "98ehj0a0j"
-    classTeacher: "Mr. Bill",
-    classTitle: "The Wild Students of Room 14"
-  }
-  */
+  current_classes_cache: {
+    type: Array // array of objects:
+  },
+
+  tentative_classes_ids: {
+    type: Array // array of objects:
+  },
+  tentative_classes_cache: {
+    type: Array // array of objects:
+  },
 
   current_groups: {
     type: Array // array of objects:

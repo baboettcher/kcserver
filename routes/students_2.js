@@ -1,5 +1,4 @@
 const Joi = require("joi");
-//const mongoose = require("mongoose");
 const express = require("express");
 const Student = require("../models/student_model");
 const router = express.Router();
@@ -45,11 +44,27 @@ router.put("/addtentativeclass/:id", async (req, res) => {
   // );
   // if (!student) console.log("❌❌ Problem validating newclass/addcode ❌❌");
   //return res.status(404).send("first_name with the given ID was not found.");
+
+  const {
+    _id,
+    grade_level,
+    teacher_name,
+    class_description,
+    teacher_id
+  } = req.body;
+
   const student = await Student.findByIdAndUpdate(
     { _id: req.params.id },
     {
       $push: {
-        current_classes: req.body._id
+        tentative_classes_ids: req.body._id,
+        tentative_classes_cache: {
+          _id,
+          grade_level,
+          teacher_name,
+          class_description,
+          teacher_id
+        }
       }
     }
   );
@@ -104,10 +119,10 @@ function validateStudent(student) {
     fb_uid: Joi.string().required(),
     email: Joi.string().email({ minDomainAtoms: 2 }),
     school_name: Joi.string().allow(""),
-    new_class_code: Joi.string().allow(""),
-    /*  new_class: Joi.string(), */
-    current_classes: Joi.array(),
-    current_groups: Joi.array()
+    new_class_code: Joi.string().allow("")
+    // new_class: Joi.string(),
+    // current_classes: Joi.array(),
+    // current_groups: Joi.array()
   };
   return Joi.validate(student, schema);
 }

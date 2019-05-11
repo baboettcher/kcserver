@@ -78,8 +78,8 @@ function validateJoinCode(joincode) {
     teacher_name: Joi.string().required(),
     teacher_id: Joi.string().required(),
 
-    students_tentative: Joi.array(),
-    students_confirmed: Joi.array(),
+    // students_tentative: Joi.array(),
+    // students_confirmed: Joi.array(),
 
     school_name: Joi.string().allow(""),
     school_id: Joi.string().allow(""),
