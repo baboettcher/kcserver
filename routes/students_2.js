@@ -4,7 +4,41 @@ const Student = require("../models/student_model");
 const router = express.Router();
 
 router.get("/:fb_uid", async (req, res) => {
+  console.log("🆔🆔🆔 STUDENT DASH CALLED 🆔🆔🆔", req.params);
+  // NEXT: Show the student classes
+  // tentatice_classes_ids - iterate over IDS and populate
+  // #1
+  // Change model :
   const student = await Student.find(req.params);
+  // whici properties to show?
+  // populate a SINGLE class (edit in postman)
+  /* 
+  const author = new Person({
+    _id: new mongoose.Types.ObjectId(),
+    name: 'Ian Fleming',
+    age: 50
+  });
+   */
+  // .populate() -- TRY HERE
+
+  // #2 Change model to array of {Object.type}
+  //  THEN, populate an array of classIDS
+
+  if (!student) {
+    console.log("❌❌ No student found with fb_uid:", req.params.fb_uid);
+    return res
+      .status(404)
+      .send("Student not found w/ fb_uid ", req.params.fb_uid);
+  }
+  res.send(student);
+});
+
+// orig
+router.get("/:fb_uid_ORIG", async (req, res) => {
+  console.log("🆔🆔🆔 STUDENT DASH CALLED 🆔🆔🆔", req.params);
+
+  const student = await Student.find(req.params);
+
   if (!student) {
     console.log("❌❌ No student found with fb_uid:", req.params.fb_uid);
     return res

@@ -27,16 +27,16 @@ const StudentSchema = new Schema({
   },
 
   school_name: String,
+
   new_class_code: String,
-  /* 
-  new_class: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "addcode" // name of target collection (or AddCode?)
-  }, */
 
   current_classes_ids: {
-    type: Array // array of objects:
+    type: {
+      type: Schema.ObjectId,
+      ref: "addcode"
+    } // array of addcode ids
   },
+
   current_classes_cache: {
     type: Array // array of objects:
   },
@@ -44,6 +44,7 @@ const StudentSchema = new Schema({
   tentative_classes_ids: {
     type: Array // array of objects:
   },
+
   tentative_classes_cache: {
     type: Array // array of objects:
   },
@@ -52,13 +53,18 @@ const StudentSchema = new Schema({
     type: Array // array of objects:
   }
   /* 
-    { 
-      group_uid : "lzdvldjf"
-      group_title: "Bobcats"
-      arrangementTopic: "Math"
-      teacher: "Mr. Lozada"
-    }
-   */
+  { 
+    group_uid : "lzdvldjf"
+    group_title: "Bobcats"
+    arrangementTopic: "Math"
+    teacher: "Mr. Lozada"
+  }
+  */
+  /* 
+ new_class: {
+   type: mongoose.Schema.Types.ObjectId,
+   ref: "addcode" // name of target collection (or AddCode?)
+ }, */
 });
 
 const Student = mongoose.model("student", StudentSchema);
