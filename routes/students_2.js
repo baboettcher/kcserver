@@ -67,58 +67,54 @@ router.post("/", async (req, res) => {
 router.put("/addtentativeclass/:id", async (req, res) => {
   console.log("🆔🆔🆔 STUDENT PUT - ADD TENTATIVE CLASS  🆔🆔🆔", req.params);
 
+  // Need to validate addcode?
   // const { error } = validateStudent(req.body);
   // if (error) return res.status(400).send(error.details[0].message);
-  // const student = await Student.findByIdAndUpdate(
-  //   req.params.id,
-  //   { first_name: req.body.first_name },
-  //   {
-  //     new: true
-  //   }
-  // );
-  // if (!student) console.log("❌❌ Problem validating newclass/addcode ❌❌");
-  //return res.status(404).send("first_name with the given ID was not found.");
 
-  const {
-    _id,
-    grade_level,
-    teacher_name,
-    class_description,
-    teacher_id
-  } = req.body;
-
-  const student = await Student.findByIdAndUpdate(
-    { _id: req.params.id },
-    {
-      $push: {
-        tentative_classes_ids: req.body._id,
-        tentative_classes_cache: {
-          _id,
-          grade_level,
-          teacher_name,
-          class_description,
-          teacher_id
-        }
-      }
-    }
+  const checkIfClassIdInTentativeClasses = await Student.findById(
+    req.params.id
   );
 
-  if (!student) {
-    console.log("❌❌ Problem updating record ❌❌");
-    return res.status(404).send("Updating joincode record error");
-  }
+  const tentative_classes_ids = checkIfClassIdInTentativeClasses.toObject()
+    .tentative_classes_ids;
+  if (tentative_classes_ids.includes(req.body._id)) {
+    console.log("ALREADY PRESENT");
+    res.send(checkIfClassIdInTentativeClasses).status(404); // what should response be?
+  } else {
+    const {
+      _id,
+      grade_level,
+      teacher_name,
+      class_description,
+      teacher_id
+    } = req.body;
 
-  console.log("🐡🐡🐡 SUCCESS PUSHING TO STUDENT 🐡🐡🐡 ");
-  res.send(student);
+    const student = await Student.findByIdAndUpdate(
+      { _id: req.params.id },
+      {
+        $push: {
+          tentative_classes_ids: req.body._id,
+          tentative_classes_cache: {
+            _id,
+            grade_level,
+            teacher_name,
+            class_description,
+            teacher_id
+          }
+        }
+      }
+    );
+
+    if (!student) {
+      console.log("❌❌ Problem updating record ❌❌");
+      return res.status(404).send("Updating joincode record error");
+    }
+
+    console.log("🐡🐡🐡 SUCCESS PUSHING TO TENTAIVE_CLASSES 🐡🐡🐡 ");
+    res.send(student);
+  }
 });
 
-// NEXT #1:
-// if teacher rejects, remove class from tentative_classes and add message to message_to_user { text: blabla, sender: teacherUID}
-
-// NEXT #2:
-// after teacher confirms, push new class to confirmed_classes
-
-// is this route still used?
 router.put("/:id", async (req, res) => {
   const { error } = validateStudent(req.body);
   if (error) return res.status(400).send(error.details[0].message);

@@ -31,8 +31,7 @@ router.put("/addclass/:id", async (req, res) => {
   ); //  { new: true }
 
   if (!teacher) {
-    console.log("teacher-->", teacher);
-    console.log("❌❌ Problem addding class to teacher record ❌❌");
+    console.log("❌❌ Problem adding class to teacher record ❌❌");
     return res.status(404).send("Updating teacher record error");
   }
 
