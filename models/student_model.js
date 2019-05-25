@@ -8,63 +8,30 @@ const StudentSchema = new Schema({
     minlength: 1,
     maxlength: 50
   },
-
   last_name: {
     type: String,
     required: [true, "last_name field is required, 1 to 50 char"],
     minlength: 1,
     maxlength: 50
   },
-
   fb_uid: {
     type: String,
     required: [true, "fb_uid field is required"]
   },
-
   email: {
     type: String,
     required: [true, "email field is required"]
   },
-
   school_name: String,
-
   new_class_code: String,
 
-  current_classes_ids: {
-    type: {
-      type: Schema.ObjectId,
-      ref: "addcode"
-    } // array of addcode ids
-  },
+  tentative_classes: [{ type: Schema.ObjectId, ref: "addcode" }],
 
-  current_classes_cache: {
-    type: Array // array of objects:
-  },
-
-  tentative_classes_ids: {
-    type: Array // array of objects:
-  },
-
-  tentative_classes_cache: {
-    type: Array // array of objects:
-  },
+  current_classes: [{ type: Schema.ObjectId, ref: "addcode" }],
 
   current_groups: {
     type: Array // array of objects:
   }
-  /* 
-  { 
-    group_uid : "lzdvldjf"
-    group_title: "Bobcats"
-    arrangementTopic: "Math"
-    teacher: "Mr. Lozada"
-  }
-  */
-  /* 
- new_class: {
-   type: mongoose.Schema.Types.ObjectId,
-   ref: "addcode" // name of target collection (or AddCode?)
- }, */
 });
 
 const Student = mongoose.model("student", StudentSchema);

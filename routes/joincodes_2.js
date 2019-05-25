@@ -24,37 +24,43 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   console.log("🚹🚹🚹 JOINCODE PUT 🚹🚹🚹 ");
 
-  const checkId = await JoinCode.findById(req.params.id);
-  if (checkId.students_tentative_ids.includes(req.body._id)) {
-    console.log("--->> FOUND IN: students_tentative_ids <<----");
-    return res.status(404).send(checkId);
-  }
+  const checkTentativeStudents = await JoinCode.findById(req.params.id);
 
-  // REFACTOR to limit db calls
-  // - push req.body._id to students_tentative_id
-  // - push the object  to students_tentative_cache
-  // .save()
-  const joincode = await JoinCode.findByIdAndUpdate(
-    { _id: req.params.id },
-    {
-      $push: {
-        students_tentative_ids: req.body._id,
-        students_tentative_cache: {
-          _id: req.body._id,
-          first_name: req.body.first_name,
-          last_name: req.body.last_name
+  /*   if (checkTentativeStudents.students_tentative.includes(req.body._id)) {
+    console.log("STUDENT ALREADY PRESENT IN JOINCODE ARRAY");
+    return res.status(404).send(checkTentativeStudents);
+  } */
+
+  const tentative_students = checkTentativeStudents.toObject()
+    .students_tentative;
+
+  if (tentative_students && tentative_students.some(e => e == req.body._id)) {
+    console.log("STUDENT ALREADY PRESENT IN JOINCODE ARRAY");
+    return res.status(404).send(checkTentativeStudents);
+  } else {
+    const joincode = await JoinCode.findByIdAndUpdate(
+      { _id: req.params.id },
+      {
+        $push: {
+          students_tentative: req.body._id
+
+          // tentative_classes_cache: {
+          //   _id: req.body._id,
+          //   first_name: req.body.first_name,
+          //   last_name: req.body.last_name
+          // }
         }
       }
+    );
+
+    if (!joincode) {
+      console.log("❌❌ Problem updating record ❌❌");
+      return res.status(404).send("Updating joincode record error.");
     }
-  );
 
-  if (!joincode) {
-    console.log("❌❌ Problem updating record ❌❌");
-    return res.status(404).send("Updating joincode record error");
+    console.log("🦑🦑🦑 SUCCESS PUSHING STUDENT TO JOINCODE 🦑🦑🦑 ");
+    res.send(joincode);
   }
-
-  console.log("🦑🦑🦑 SUCCESS 🦑🦑🦑 ");
-  res.send(joincode);
 });
 
 /* router.delete("/:id", async (req, res) => {
@@ -78,8 +84,8 @@ function validateJoinCode(joincode) {
     teacher_name: Joi.string().required(),
     teacher_id: Joi.string().required(),
 
-    // students_tentative: Joi.array(),
-    // students_confirmed: Joi.array(),
+    students_tentative: Joi.array(),
+    students_confirmed: Joi.array(),
 
     school_name: Joi.string().allow(""),
     school_id: Joi.string().allow(""),

@@ -3,41 +3,46 @@ const express = require("express");
 const Student = require("../models/student_model");
 const router = express.Router();
 
-router.get("/:fb_uid", async (req, res) => {
-  console.log("🆔🆔🆔 STUDENT DASH CALLED 🆔🆔🆔", req.params);
-  // NEXT: Show the student classes
-  // tentatice_classes_ids - iterate over IDS and populate
-  // #1
-  // Change model :
-  const student = await Student.find(req.params);
-  // whici properties to show?
-  // populate a SINGLE class (edit in postman)
-  /* 
-  const author = new Person({
-    _id: new mongoose.Types.ObjectId(),
-    name: 'Ian Fleming',
-    age: 50
-  });
-   */
-  // .populate() -- TRY HERE
+router.get("/all/", async (req, res) => {
+  console.log("🔮🔮🔮 STUDENT GET ALL 🔮🔮🔮");
 
-  // #2 Change model to array of {Object.type}
-  //  THEN, populate an array of classIDS
+  const students = await Student.find()
+    .select("first_name")
+    .select("last_name")
+    .populate(
+      "tentative_classes",
+      "teacher_name grade_level -_id class_description"
+    )
+    .populate(
+      "current_classes",
+      "teacher_name grade_level -_id class_description"
+    );
+  // .populate({
+  //   path: "tentative_classes_ids",
+  //   select: "teacher_name grade_level -_id class_description"
+  // });
 
-  if (!student) {
-    console.log("❌❌ No student found with fb_uid:", req.params.fb_uid);
-    return res
-      .status(404)
-      .send("Student not found w/ fb_uid ", req.params.fb_uid);
+  if (!students) {
+    console.log("❌❌❌❌ No students found ❌❌❌❌");
+    return res.status(404).send("No students found", req.params.fb_uid);
   }
-  res.send(student);
+
+  res.send(students);
 });
 
-// orig
-router.get("/:fb_uid_ORIG", async (req, res) => {
-  console.log("🆔🆔🆔 STUDENT DASH CALLED 🆔🆔🆔", req.params);
+router.get("/:fb_uid", async (req, res) => {
+  console.log("🆔🆔🆔 STUDENT DASHBOARD 🆔🆔🆔", req.params);
 
-  const student = await Student.find(req.params);
+  const student = await Student.find(req.params)
+    .select("first_name last_name")
+    .populate(
+      "tentative_classes",
+      "teacher_name grade_level -_id class_description"
+    )
+    .populate(
+      "current_classes",
+      "teacher_name grade_level -_id class_description"
+    );
 
   if (!student) {
     console.log("❌❌ No student found with fb_uid:", req.params.fb_uid);
@@ -52,7 +57,7 @@ router.post("/", async (req, res) => {
   const { error } = validateStudent(req.body);
   if (error) {
     console.log(
-      "💩💩💩 Server error; student post 💩💩💩 ",
+      "💩💩💩 Server error; student post 💩💩💩 ", // should this be a 500 code?
       error.details[0].message
     );
     return res.status(400).send(error.details[0].message);
@@ -65,21 +70,20 @@ router.post("/", async (req, res) => {
 
 // pushes new class to tentative classes
 router.put("/addtentativeclass/:id", async (req, res) => {
-  console.log("🆔🆔🆔 STUDENT PUT - ADD TENTATIVE CLASS  🆔🆔🆔", req.params);
+  console.log("🆔🆔🆔 STUDENT PUT - ADD TENTATIVE CLASS  🆔🆔🆔");
 
   // Need to validate addcode?
-  // const { error } = validateStudent(req.body);
+  // const { error } = validateAddCode(req.body);
   // if (error) return res.status(400).send(error.details[0].message);
 
-  const checkIfClassIdInTentativeClasses = await Student.findById(
-    req.params.id
-  );
+  const checkTentativeClasses = await Student.findById(req.params.id);
 
-  const tentative_classes_ids = checkIfClassIdInTentativeClasses.toObject()
-    .tentative_classes_ids;
-  if (tentative_classes_ids.includes(req.body._id)) {
-    console.log("ALREADY PRESENT");
-    res.send(checkIfClassIdInTentativeClasses).status(404); // what should response be?
+  const tentative_classes = checkTentativeClasses.toObject().tentative_classes;
+
+  if (tentative_classes.some(e => e == req.body._id)) {
+    console.log("CLASS ALREADY PRESENT IN STUDENT ARRAY");
+
+    res.send(checkTentativeClasses).status(404); // what should response be? 404 doesn't signal error/catch block
   } else {
     const {
       _id,
@@ -87,20 +91,21 @@ router.put("/addtentativeclass/:id", async (req, res) => {
       teacher_name,
       class_description,
       teacher_id
-    } = req.body;
+    } = req.body; // no longer needed unless we return to keeping a tentative_classes_cache
 
     const student = await Student.findByIdAndUpdate(
       { _id: req.params.id },
       {
         $push: {
-          tentative_classes_ids: req.body._id,
-          tentative_classes_cache: {
-            _id,
-            grade_level,
-            teacher_name,
-            class_description,
-            teacher_id
-          }
+          tentative_classes: req.body._id
+
+          // tentative_classes_cache: {
+          //   _id,
+          //   grade_level,
+          //   teacher_name,
+          //   class_description,
+          //   teacher_id
+          // }
         }
       }
     );
@@ -110,7 +115,7 @@ router.put("/addtentativeclass/:id", async (req, res) => {
       return res.status(404).send("Updating joincode record error");
     }
 
-    console.log("🐡🐡🐡 SUCCESS PUSHING TO TENTAIVE_CLASSES 🐡🐡🐡 ");
+    console.log("🐡🐡🐡 SUCCESS PUSHING CLASS TO STUDENTS 🐡🐡🐡 ");
     res.send(student);
   }
 });

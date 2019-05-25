@@ -25,19 +25,8 @@ const JoinCodeSchema = new Schema({
     required: [true, "teacher_id field is required"]
   },
 
-  students_tentative_ids: {
-    type: Array
-  },
-  students_tentative_cache: {
-    type: Array
-  },
-
-  students_confirmed_ids: {
-    type: Array
-  },
-  students_confirmed_cache: {
-    type: Array
-  },
+  students_tentative: [{ type: Schema.ObjectId, ref: "student" }],
+  students_confirmed: [{ type: Schema.ObjectId, ref: "student" }],
 
   school_name: {
     type: String
