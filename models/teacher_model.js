@@ -28,9 +28,10 @@ const TeacherSchema = new Schema({
 
   school_name: String,
 
+  // REMOVE ?
   new_class: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "addcode" // name of target collection (or AddCode?)
+    ref: "addcode"
   },
 
   current_classes: {
@@ -42,6 +43,11 @@ const TeacherSchema = new Schema({
   },
   current_students: {
     type: Array // array of objects:
+  },
+
+  default_class: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "addcode"
   }
 });
 

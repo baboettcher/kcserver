@@ -23,7 +23,7 @@ router.post("/", async (req, res) => {
 });
 
 router.put("/addclass/:id", async (req, res) => {
-  console.log("Class to push:", req.body);
+  console.log("💎💎💎Class to push:", req.body);
 
   const teacher = await Teacher.findByIdAndUpdate(
     { _id: req.params.id },
@@ -84,7 +84,8 @@ function validateTeacher(teacher) {
     new_class: Joi.string().allow(""),
     current_classes: Joi.array(),
     current_groups: Joi.array(),
-    current_students: Joi.array()
+    current_students: Joi.array(),
+    default_class: Joi.object() // try!
   };
   return Joi.validate(teacher, schema);
 }
