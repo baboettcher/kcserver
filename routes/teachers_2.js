@@ -22,9 +22,27 @@ router.post("/", async (req, res) => {
   res.send(teacher);
 });
 
-router.put("/addclass/:id", async (req, res) => {
-  console.log("💎💎💎Class to push:", req.body);
+router.put("/setdefaultclass/:id", async (req, res) => {
+  console.log("Default class to set:", req.body);
 
+  try {
+    const teacher = await Teacher.findByIdAndUpdate(
+      { _id: req.params.id },
+      { default_class: req.body._id }
+    ); //  { new: true }
+
+    res.status(200).send(teacher); // since we are only updating the default_class with an ID, the response will not be used on state
+
+    // if (!teacher) {
+    //   console.log("❌❌ Problem updating class to teacher record ❌❌");
+    //   return res.status(404).send("Updating teacher record error");
+    // }
+  } catch {
+    res.status(404).send("Error. Check teacher ID or class ID");
+  }
+});
+
+router.put("/addclass/:id", async (req, res) => {
   const teacher = await Teacher.findByIdAndUpdate(
     { _id: req.params.id },
     { $push: { current_classes: req.body } }
@@ -39,7 +57,7 @@ router.put("/addclass/:id", async (req, res) => {
 });
 
 router.put("/:id", async (req, res) => {
-  console.log("----->>>>", req.body);
+  // console.log("----->>>>", req.body);
   const { error } = validateTeacher(req.body);
   if (error) {
     console.log(
@@ -82,7 +100,7 @@ function validateTeacher(teacher) {
     email: Joi.string().email({ minDomainAtoms: 2 }),
     school_name: Joi.string().allow(""),
     new_class: Joi.string().allow(""),
-    current_classes: Joi.array(),
+    current_classes: Joi.array(), // change to .object()
     current_groups: Joi.array(),
     current_students: Joi.array(),
     default_class: Joi.object() // try!
