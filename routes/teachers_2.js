@@ -23,7 +23,7 @@ router.post("/", async (req, res) => {
 });
 
 router.put("/setdefaultclass/:id", async (req, res) => {
-  console.log("Default class to set:", req.body);
+  console.log("🛎🛎🛎Default class to set to:", req.body);
 
   try {
     const teacher = await Teacher.findByIdAndUpdate(
