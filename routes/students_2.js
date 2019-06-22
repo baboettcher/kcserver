@@ -17,10 +17,6 @@ router.get("/all/", async (req, res) => {
       "current_classes",
       "teacher_name grade_level -_id class_description"
     );
-  // .populate({
-  //   path: "tentative_classes_ids",
-  //   select: "teacher_name grade_level -_id class_description"
-  // });
 
   if (!students) {
     console.log("❌❌❌❌ No students found ❌❌❌❌");

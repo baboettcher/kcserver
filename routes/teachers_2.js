@@ -5,13 +5,23 @@ const router = express.Router();
 
 router.get("/:fb_uid", async (req, res) => {
   console.log("✅✅✅TEACHER DASH REQUESTED ✅✅✅  req.params-->", req.params);
-
-  const teacher = await Teacher.find(req.params);
-  if (!teacher) {
-    console.log("❌❌ No teacher found ❌❌");
-    return res.status(404).send("Teacher with the given fb_uid was not found.");
+  try {
+    const teacher = await Teacher.find(req.params).populate(
+      "default_class",
+      "-teacher_id -__v"
+    );
+    // invalid teacher returns a [], why?
+    if (!teacher.length) {
+      console.log("❌❌ No teacher found ❌❌");
+      return res
+        .status(404)
+        .send("Teacher with the given fb_uid was not found.");
+    }
+    res.send(teacher);
+  } catch (err) {
+    console.log("ERROR IN GET TEACHER DASHBOARD");
+    res.status(500).send("Internal server error");
   }
-  res.send(teacher);
 });
 
 router.post("/", async (req, res) => {
