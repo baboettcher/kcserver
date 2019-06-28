@@ -38,10 +38,12 @@ router.put("/setdefaultclass/:id", async (req, res) => {
   try {
     const teacher = await Teacher.findByIdAndUpdate(
       { _id: req.params.id },
-      { default_class: req.body._id }
-    ); //  { new: true }
+      { default_class: req.body._id },
+      { new: true }
+    ) //
+      .populate("default_class", "-teacher_id -__v");
 
-    res.status(200).send(teacher); // since we are only updating the default_class with an ID, the response will not be used on state
+    res.status(200).send(teacher);
 
     // if (!teacher) {
     //   console.log("❌❌ Problem updating class to teacher record ❌❌");
