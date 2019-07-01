@@ -3,6 +3,7 @@ const express = require("express");
 const Student = require("../models/student_model");
 const router = express.Router();
 
+// need to removve populate methods for
 router.get("/all/", async (req, res) => {
   console.log("🔮🔮🔮 STUDENT GET ALL 🔮🔮🔮");
 

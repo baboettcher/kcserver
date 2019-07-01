@@ -1,6 +1,7 @@
 const Joi = require("joi");
 const express = require("express");
 const Teacher = require("../models/teacher_model");
+
 const router = express.Router();
 
 router.get("/:fb_uid", async (req, res) => {
@@ -33,7 +34,7 @@ router.post("/", async (req, res) => {
 });
 
 router.put("/setdefaultclass/:id", async (req, res) => {
-  console.log("🛎🛎🛎Default class to set to:", req.body);
+  console.log("🛎🛎🛎--1.Default class to set to:", req.body);
 
   try {
     const teacher = await Teacher.findByIdAndUpdate(
@@ -43,13 +44,21 @@ router.put("/setdefaultclass/:id", async (req, res) => {
     ) //
       .populate("default_class", "-teacher_id -__v");
 
+    const teacher2 = await teacher.toJSON(); // check later if this can be done without json()
+    const { default_class } = teacher2;
+    const arrayOfIdsToPopulate = default_class
+      ? default_class.students_tentative
+      : null;
+    // iterate over arrayOfIds and set values to default_class
+
     res.status(200).send(teacher);
 
     // if (!teacher) {
     //   console.log("❌❌ Problem updating class to teacher record ❌❌");
     //   return res.status(404).send("Updating teacher record error");
     // }
-  } catch {
+  } catch (err) {
+    console.log("OOPS", err);
     res.status(404).send("Error. Check teacher ID or class ID");
   }
 });
