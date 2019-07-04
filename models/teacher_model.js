@@ -38,6 +38,10 @@ const TeacherSchema = new Schema({
     ref: "addcode"
   },
 
+  default_class_full: {
+    type: Array
+  },
+
   current_classes: {
     type: Array // array of objects:
   },

@@ -1,6 +1,10 @@
 const Joi = require("joi");
 const express = require("express");
+//const mongoose = require("mongoose");
+
 const Teacher = require("../models/teacher_model");
+const Student = require("../models/student_model");
+const JoinCode = require("../models/joincode_model");
 
 const router = express.Router();
 
@@ -33,8 +37,12 @@ router.post("/", async (req, res) => {
   res.send(teacher);
 });
 
+// new test
 router.put("/setdefaultclass/:id", async (req, res) => {
-  console.log("🛎🛎🛎--1.Default class to set to:", req.body);
+  // console.log(
+  //   "⛺️⛺️⛺️⛺️⛺️⛺️⛺️⛺️-1.Default class to set to (req.body)",
+  //   req.body
+  // );
 
   try {
     const teacher = await Teacher.findByIdAndUpdate(
@@ -44,19 +52,92 @@ router.put("/setdefaultclass/:id", async (req, res) => {
     ) //
       .populate("default_class", "-teacher_id -__v");
 
-    const teacher2 = await teacher.toJSON(); // check later if this can be done without json()
+    const teacher2 = await teacher.toJSON();
+
+    const { default_class } = teacher2;
+    const arrayOfStudentIdsToPopulate = default_class
+      ? default_class.students_tentative
+      : null;
+    // GET STUDENT INFO:
+    // iterate over arrayOfIds and set values to default_class
+
+    console.log(
+      "arrayOfStudentIdsToPopulate====>",
+      arrayOfStudentIdsToPopulate
+    );
+
+    if (arrayOfStudentIdsToPopulate && arrayOfStudentIdsToPopulate.length > 0) {
+      const students = await Student.find({
+        _id: {
+          $in: arrayOfStudentIdsToPopulate
+        }
+      });
+
+      teacher.default_class_full = students;
+
+      await teacher.save();
+
+      // const finalTest = await teacher.save();
+      // const finalTest2 = await teacher.toJSON();
+      // console.log("💠💠💠💠💠💠💠finalTest-->💠💠💠💠💠💠💠💠", finalTest2);
+
+      res.status(200).send(teacher);
+    } else {
+      console.log("NO STUDENT TO LOOK UP");
+    }
+  } catch (err) {
+    console.log("OOPS", err);
+    res.status(404).send("Error. Check teacher ID or class ID");
+  }
+});
+
+//ORIG
+router.put("/setdefaultclass_orig/:id", async (req, res) => {
+  console.log("🗺🗺🗺🗺🗺🗺🗺🗺-1.Default class to set to (req.body)", req.body);
+  try {
+    const teacher = await Teacher.findByIdAndUpdate(
+      { _id: req.params.id },
+      { default_class: req.body._id },
+      { new: true }
+    ) //
+      .populate("default_class", "-teacher_id -__v");
+
+    const teacher2 = await teacher.toJSON();
+
+    console.log("teacher2", teacher2);
     const { default_class } = teacher2;
     const arrayOfIdsToPopulate = default_class
       ? default_class.students_tentative
       : null;
+    // GET STUDENT INFO:
     // iterate over arrayOfIds and set values to default_class
 
-    res.status(200).send(teacher);
+    console.log("arrayOfIdsToPopulate====>", arrayOfIdsToPopulate);
 
-    // if (!teacher) {
-    //   console.log("❌❌ Problem updating class to teacher record ❌❌");
-    //   return res.status(404).send("Updating teacher record error");
-    // }
+    if (arrayOfIdsToPopulate && arrayOfIdsToPopulate.length > 0) {
+      /*    const student = await Student.find({
+     _id: {
+       $in: [
+         mongoose.Types.ObjectId("5d197cb138d44c23c8272e91"),
+         mongoose.Types.ObjectId("5d197cc638d44c23c8272e92")
+       ]
+     }
+   }); */
+      const student = await Student.find({
+        _id: {
+          $in: arrayOfIdsToPopulate
+        }
+      });
+
+      console.log(
+        "student 🌅🌅🌅🌅🌅🌅🌅🌅🌅🌅🌅🌅🌅🌅🌅🌅🌅🌅🌅🌅🌅🌅🌅🌅🌅🌅🌅🌅=>>>>"
+        // student
+      );
+    } else {
+      console.log("NO STUDENT TO LOOK UP");
+    }
+
+    res.status(200).send(teacher);
   } catch (err) {
     console.log("OOPS", err);
     res.status(404).send("Error. Check teacher ID or class ID");
