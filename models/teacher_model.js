@@ -33,12 +33,17 @@ const TeacherSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "addcode"
   },
-  default_class: {
+
+  default_class_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "addcode"
   },
 
-  default_class_full: {
+  default_class_info: {
+    type: Object
+  },
+
+  default_class_students: {
     type: Array
   },
 
@@ -49,13 +54,9 @@ const TeacherSchema = new Schema({
   current_groups: {
     type: Array // array of objects:
   },
+
   current_students: {
     type: Array // array of objects:
-  },
-
-  default_class: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "addcode"
   }
 });
 
