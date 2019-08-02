@@ -8,7 +8,7 @@ const app = express();
 mongoose
   .connect("mongodb://adam:go4MojXIE4vuKUX@ds223542.mlab.com:23542/kidcoin3")
   .then(() => console.log("👾👾👾Connected to MongoDB..."))
-  .catch(err => console.error("Could not connect to MongoDB..."));
+  .catch(err => console.error("Could not connect to MongoDB...", err.message));
 
 mongoose.Promise = global.Promise;
 
