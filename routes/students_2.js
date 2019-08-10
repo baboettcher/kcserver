@@ -1,4 +1,6 @@
 const Joi = require("joi");
+//const Joi = require("@hapi/joi");
+
 const express = require("express");
 const Student = require("../models/student_model");
 const router = express.Router();
@@ -112,6 +114,33 @@ router.put("/addtentativeclass/:id", async (req, res) => {
   }
 });
 
+/* Models.post.Post.findOneAndUpdate({ _id: res._id }, { $inc: { views: 1 } }, {new: true },function(err, response) {
+  if (err) {
+  callback(err);
+ } else {
+  callback(response);
+ } */
+
+router.put("/addcredit/:id", async (req, res) => {
+  console.log("🈯️🈯️🈯️ ADD CREDIT  🈯️🈯️🈯️");
+
+  const student = await Student.findByIdAndUpdate(
+    { _id: req.params.id },
+    {
+      $inc: { credits: 1 }
+    },
+    { new: true } //adds new data to response
+  );
+
+  if (!student) {
+    console.log("❌❌ Problem adding credit record ❌❌");
+    return res.status(404).send("Updating student record with credit error");
+  }
+
+  console.log("SUCCESS adding credits");
+  res.send(student);
+});
+
 router.put("/:id", async (req, res) => {
   const { error } = validateStudent(req.body);
   if (error) return res.status(400).send(error.details[0].message);
@@ -146,7 +175,12 @@ function validateStudent(student) {
     fb_uid: Joi.string().required(),
     email: Joi.string().email({ minDomainAtoms: 2 }),
     school_name: Joi.string().allow(""),
-    new_class_code: Joi.string().allow("")
+    new_class_code: Joi.string().allow(""),
+    credits: Joi.number()
+      .integer()
+      .min(0),
+    updated: Joi.string().allow(""),
+    created: Joi.string().allow("")
     // new_class: Joi.string(),
     // current_classes: Joi.array(),
     // current_groups: Joi.array()

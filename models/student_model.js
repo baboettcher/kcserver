@@ -31,7 +31,10 @@ const StudentSchema = new Schema({
 
   current_groups: {
     type: Array // array of objects:
-  }
+  },
+  credits: { type: Number, default: 0 },
+  updated: { type: Date, default: Date.now },
+  created: { type: Date, default: Date.now }
 });
 
 const Student = mongoose.model("student", StudentSchema);
