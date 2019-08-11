@@ -11,7 +11,7 @@ const JoinCode = require("../models/joincode_model");
 const router = express.Router();
 
 router.get("/:fb_uid", async (req, res) => {
-  console.log("✅✅✅TEACHER DASH REQUESTED ✅✅✅  req.params-->", req.params);
+  console.log("✅✅✅TEACHER DASH REQUESTED ✅✅✅", req.params);
   try {
     const teacher = await Teacher.find(req.params).populate(
       "default_class",
@@ -120,6 +120,46 @@ router.put("/addclass/:id", async (req, res) => {
   res.status(200).send(req.body);
 });
 
+/* try {
+  const teacher = await Teacher.find(req.params).populate(
+    "default_class",
+    "-teacher_id -__v"
+  );
+  // invalid teacher returns a [], why?
+  if (!teacher.length) {
+    console.log("❌❌ No teacher found ❌❌");
+    return res
+      .status(404)
+      .send("Teacher with the given fb_uid was not found.");
+  }
+  res.send(teacher);
+} catch (err) {
+  console.log("ERROR IN GET TEACHER DASHBOARD");
+  res.status(500).send("Internal server error");
+} */
+
+router.put("/addcredit/:id", async (req, res) => {
+  console.log("🈯️🈯️🈯️ ADD CREDIT  🈯️🈯️🈯️");
+
+  const student = await Student.findByIdAndUpdate(
+    { _id: req.params.id },
+    {
+      $inc: req.body // change this from 1 to body
+      // $inc: { credits: 1 }
+    },
+    { new: true }
+  );
+
+  if (!student) {
+    console.log("❌❌ Problem adding credit record ❌❌");
+    return res.status(404).send("Updating student record with credit error");
+  }
+
+  console.log("SUCCESS adding credits");
+  res.send(student);
+});
+
+// this is for?
 router.put("/:id", async (req, res) => {
   // console.log("----->>>>", req.body);
   const { error } = validateTeacher(req.body);
