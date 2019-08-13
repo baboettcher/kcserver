@@ -140,11 +140,13 @@ router.put("/addclass/:id", async (req, res) => {
 
 router.put("/addcredit/:id", async (req, res) => {
   console.log("🈯️🈯️🈯️ ADD CREDIT  🈯️🈯️🈯️");
+  console.log("req.body", parseFloat(req.body.credits));
+  console.log("typeof", typeof parseFloat(req.body.credits));
 
   const student = await Student.findByIdAndUpdate(
     { _id: req.params.id },
     {
-      $inc: req.body // change this from 1 to body
+      $inc: req.body
       // $inc: { credits: 1 }
     },
     { new: true }
@@ -156,6 +158,28 @@ router.put("/addcredit/:id", async (req, res) => {
   }
 
   console.log("SUCCESS adding credits");
+  res.send(student);
+});
+
+router.put("/decreasecredit/:id", async (req, res) => {
+  console.log("🈯️🈯️🈯️ DECREASE CREDIT  🈯️🈯️🈯️");
+
+  // Math.abs(num) * -1.
+  const student = await Student.findByIdAndUpdate(
+    { _id: req.params.id },
+    {
+      $inc: req.body
+      // $dec: { credits: 1 }
+    },
+    { new: true }
+  );
+
+  if (!student) {
+    console.log("❌❌ Problem adding credit record ❌❌");
+    return res.status(404).send("Updating student record with credit error");
+  }
+
+  console.log("SUCCESS decreasing credits");
   res.send(student);
 });
 

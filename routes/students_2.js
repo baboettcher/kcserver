@@ -156,9 +156,10 @@ function validateStudent(student) {
     email: Joi.string().email({ minDomainAtoms: 2 }),
     school_name: Joi.string().allow(""),
     new_class_code: Joi.string().allow(""),
-    credits: Joi.number()
-      .integer()
-      .min(0),
+    // credits: Joi.number()
+    //   .integer()
+    //   .min(0),
+    credits: Joi.number().float(),
     updated: Joi.string().allow(""),
     created: Joi.string().allow("")
     // new_class: Joi.string(),
