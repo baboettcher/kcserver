@@ -138,10 +138,10 @@ router.put("/addclass/:id", async (req, res) => {
   res.status(500).send("Internal server error");
 } */
 
-router.put("/addcredit/:id", async (req, res) => {
-  console.log("🈯️🈯️🈯️ ADD CREDIT  🈯️🈯️🈯️");
-  console.log("req.body", parseFloat(req.body.credits));
-  console.log("typeof", typeof parseFloat(req.body.credits));
+router.put("/increasecredit/:id", async (req, res) => {
+  if (parseFloat(req.body.credits) < 0) {
+    return res.status(404).send("Positive values required");
+  }
 
   const student = await Student.findByIdAndUpdate(
     { _id: req.params.id },
@@ -157,30 +157,33 @@ router.put("/addcredit/:id", async (req, res) => {
     return res.status(404).send("Updating student record with credit error");
   }
 
-  console.log("SUCCESS adding credits");
   res.send(student);
+  console.log("🈯️🈯️🈯️ SUCCESS adding credits 🈯️🈯️🈯️", req.body.credits);
 });
 
 router.put("/decreasecredit/:id", async (req, res) => {
-  console.log("🈯️🈯️🈯️ DECREASE CREDIT  🈯️🈯️🈯️");
+  if (parseFloat(req.body.credits) < 0) {
+    return res.status(404).send("Positive values required");
+  }
 
-  // Math.abs(num) * -1.
+  const makeNegative = parseFloat(req.body.credits) * -1;
+
   const student = await Student.findByIdAndUpdate(
     { _id: req.params.id },
     {
-      $inc: req.body
-      // $dec: { credits: 1 }
+      $inc: { credits: makeNegative }
+      // $inc: { credits: 1 }
     },
     { new: true }
   );
 
   if (!student) {
-    console.log("❌❌ Problem adding credit record ❌❌");
+    console.log("❌❌ Problem subtracting credit record ❌❌");
     return res.status(404).send("Updating student record with credit error");
   }
 
-  console.log("SUCCESS decreasing credits");
   res.send(student);
+  console.log("🈯️🈯️🈯️ SUCCESS subtracting credits 🈯️🈯️🈯️", makeNegative);
 });
 
 // this is for?
