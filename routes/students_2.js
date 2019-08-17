@@ -12,6 +12,7 @@ router.get("/all/", async (req, res) => {
   const students = await Student.find()
     .select("first_name")
     .select("last_name")
+    .select("credits")
     .populate(
       "tentative_classes",
       "teacher_name grade_level -_id class_description"
@@ -33,7 +34,7 @@ router.get("/:fb_uid", async (req, res) => {
   console.log("🆔🆔🆔 STUDENT DASHBOARD 🆔🆔🆔", req.params);
 
   const student = await Student.find(req.params)
-    .select("first_name last_name")
+    .select("first_name last_name credits")
     .populate(
       "tentative_classes",
       "teacher_name grade_level -_id class_description"
@@ -159,7 +160,7 @@ function validateStudent(student) {
     // credits: Joi.number()
     //   .integer()
     //   .min(0),
-    credits: Joi.number().float(),
+    credits: Joi.number(),
     updated: Joi.string().allow(""),
     created: Joi.string().allow("")
     // new_class: Joi.string(),

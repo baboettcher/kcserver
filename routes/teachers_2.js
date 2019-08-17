@@ -31,20 +31,45 @@ router.get("/:fb_uid", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
-  const { error } = validateTeacher(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-  let teacher = new Teacher(req.body);
-  teacher = await teacher.save();
-  res.send(teacher);
+// Get updated data from default_class_students
+router.get("/refreshdefaultclass/:id", async (req, res) => {
+  console.log("🕹🕹🕹 YES! GET REFRESH CLASS DATA 🕹🕹🕹 ", req.params.id);
+
+  try {
+    const teacher = await Teacher.findById(req.params.id).populate(
+      "default_class_id",
+      "-teacher_id -__v"
+    );
+    const { default_class_info } = teacher;
+
+    const arrayOfStudentIdsToPopulate = default_class_info.students_tentative;
+
+    console.log("arrayOfStudentIdsToPopulate:", arrayOfStudentIdsToPopulate);
+
+    //populate updated students
+    if (arrayOfStudentIdsToPopulate && arrayOfStudentIdsToPopulate.length > 0) {
+      const students = await Student.find({
+        _id: {
+          $in: arrayOfStudentIdsToPopulate
+        }
+      });
+
+      // #2 Set updated student data
+      teacher.default_class_students = students;
+    } else {
+      console.log("NO STUDENT TO LOOK UP");
+      teacher.default_class_students = [];
+    }
+
+    await teacher.save();
+    res.send(teacher.default_class_students); // updated student data returned
+  } catch (err) {
+    res.status(500).send(["Internal server error", err]);
+  }
 });
 
-// new test
 router.put("/setdefaultclass/:id", async (req, res) => {
-  console.log(
-    "⛺️⛺️⛺️⛺️⛺️⛺️⛺️⛺ 1.Default class to set to (req.body)\n",
-    req.body
-  );
+  console.log("⛺️⛺️⛺️ 1.Default class to set to (req.body)\n", req.body);
 
   try {
     const teacher = await Teacher.findByIdAndUpdate(
@@ -58,25 +83,22 @@ router.put("/setdefaultclass/:id", async (req, res) => {
     const teacher2 = await teacher.toJSON(); // Need to convert to JSON? try and erase?
     const { default_class_id: updatedClassInfo } = teacher2;
 
-    console.log(
-      "🔸🔸🔸🔸🔸🔸🔸🔸🔸🔸 2b. updatedClassInfo===> \n",
-      updatedClassInfo
-    );
+    console.log("🔸🔸🔸 2b. updatedClassInfo===> \n", updatedClassInfo);
 
-    // #3 Set update class data
+    // #3 Set updated class data
     teacher.default_class_info = updatedClassInfo;
 
-    // #3.5 Reset ID (optional -- do to keep response consistant to db entry consistant )
+    // #4 Reset ID (optional -- do to keep response consistant to db entry consistant )
     teacher.default_class_id = updatedClassInfo._id;
 
-    // #4 Update individual student IF they exist
+    // #5 Update individual student IF they exist
     const arrayOfStudentIdsToPopulate = updatedClassInfo.students_tentative
       .length
       ? updatedClassInfo.students_tentative
       : null;
 
     console.log(
-      "🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈 3.arrayOfStudentIdsToPopulate====>",
+      "🏳️‍🌈🏳️‍🌈🏳️‍🌈 3.arrayOfStudentIdsToPopulate====>",
       arrayOfStudentIdsToPopulate
     );
 
@@ -89,10 +111,6 @@ router.put("/setdefaultclass/:id", async (req, res) => {
 
       // #2 Set updated student data
       teacher.default_class_students = students;
-
-      // const finalTest = await teacher.save();
-      // const finalTest2 = await teacher.toJSON();
-      // console.log("💠💠💠💠💠💠💠finalTest-->💠💠💠💠💠💠💠💠", finalTest2);
     } else {
       console.log("NO STUDENT TO LOOK UP");
       teacher.default_class_students = [];
@@ -207,6 +225,14 @@ router.put("/:id", async (req, res) => {
     return res.status(404).send("Updating teacher record error");
   }
 
+  res.send(teacher);
+});
+
+router.post("/", async (req, res) => {
+  const { error } = validateTeacher(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+  let teacher = new Teacher(req.body);
+  teacher = await teacher.save();
   res.send(teacher);
 });
 
