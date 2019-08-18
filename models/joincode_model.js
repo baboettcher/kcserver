@@ -1,6 +1,46 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+// LATER: how to use joi to validate sub-docs?
+const GroupSchema = new Schema({
+  name: {
+    type: String
+  },
+  avatar_url: {
+    type: String,
+    default:
+      "https://images.all-free-download.com/images/graphiclarge/cartoon_goat_clip_art_22215.jpg"
+  },
+  audio_url: {
+    type: String,
+    default: "https://freesound.org/people/shadeslayer99/sounds/161194/"
+  },
+  motto: {
+    type: String,
+    default: "Believe in yourself!"
+  },
+  group_points: {
+    type: Number,
+    default: 0
+  },
+  group_points_transaction: {
+    type: Array,
+    default: []
+  },
+
+  groupMembers: {
+    type: Array,
+    default: []
+  },
+  groupMembersMiniObject: {
+    type: Array,
+    default: []
+  },
+  date_updated: { type: Date, default: Date.now },
+  date_created: { type: Date, default: Date.now },
+  date_last_cleared: { type: Date, default: Date.now }
+});
+
 const JoinCodeSchema = new Schema({
   join_code: {
     type: String,
@@ -42,9 +82,16 @@ const JoinCodeSchema = new Schema({
   },
   special_notes: {
     type: String
-  }
+  },
+
+  // later make this an ARRAY of groups
+  group_1: { type: GroupSchema, default: {} },
+  group_2: { type: GroupSchema, default: {} },
+  group_3: { type: GroupSchema, default: {} },
+  group_4: { type: GroupSchema, default: {} },
+  group_5: { type: GroupSchema, default: {} }
 });
 
-const JoinCode = mongoose.model("addcode", JoinCodeSchema);
+const JoinCode = mongoose.model("joincode", JoinCodeSchema);
 
 module.exports = JoinCode;

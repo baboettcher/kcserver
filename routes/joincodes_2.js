@@ -14,7 +14,7 @@ router.get("/:join_code", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  console.log("🚹 JOINCODE POSTED 🚹 ");
+  console.log("🔮🔮🔮 JOINCODE POSTED 🔮🔮🔮");
   const { error } = validateJoinCode(req.body);
   if (error) return res.status(400).send(error.details[0].message);
   let joincode = new JoinCode(req.body);
@@ -92,7 +92,13 @@ function validateJoinCode(joincode) {
     school_id: Joi.string().allow(""),
     district_name: Joi.string().allow(""),
     district_id: Joi.string().allow(""),
-    special_notes: Joi.string().allow("")
+    special_notes: Joi.string().allow(""),
+
+    group_1: Joi.object(),
+    group_2: Joi.object(),
+    group_3: Joi.object(),
+    group_4: Joi.object(),
+    group_5: Joi.object()
   };
   return Joi.validate(joincode, schema);
 }
