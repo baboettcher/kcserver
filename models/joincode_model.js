@@ -4,7 +4,8 @@ const Schema = mongoose.Schema;
 // LATER: how to use joi to validate sub-docs?
 const GroupSchema = new Schema({
   name: {
-    type: String
+    type: String,
+    default: "Red Apples"
   },
   avatar_url: {
     type: String,
@@ -42,6 +43,58 @@ const GroupSchema = new Schema({
 });
 
 const JoinCodeSchema = new Schema({
+  join_code: {
+    type: String,
+    required: [true, "join_code field is required"]
+  },
+  grade_level: {
+    type: String,
+    required: [true, "grade field is required"]
+  },
+  class_description: {
+    type: String,
+    required: [true, "class_description field is required"]
+  },
+
+  teacher_name: {
+    type: String,
+    required: [true, "teacher_name field is required"]
+  }, // later get this from id
+
+  teacher_id: {
+    type: String,
+    required: [true, "teacher_id field is required"]
+  },
+
+  students_tentative: [{ type: Schema.ObjectId, ref: "student" }],
+  students_confirmed: [{ type: Schema.ObjectId, ref: "student" }],
+
+  school_name: {
+    type: String
+  }, // later get this from id
+  school_id: {
+    type: String
+  },
+  district_name: {
+    type: String
+  }, // later get this from id
+  district_id: {
+    type: String
+  },
+  special_notes: {
+    type: String
+  },
+
+  /*   groups: [GroupSchema],
+  group_default_id: String, // should this be an object, as it is in teacher_model?3
+  group_default_info: Object */
+
+  groups: { type: [GroupSchema], default: [] },
+  group_default_id: { type: String, default: "" }, // should this be an object, as it is in teacher_model?3
+  group_default_info: { type: Object, default: { defaultSet: false } }
+});
+
+const JoinCodeSchema_5_groups = new Schema({
   join_code: {
     type: String,
     required: [true, "join_code field is required"]

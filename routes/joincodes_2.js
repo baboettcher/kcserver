@@ -77,6 +77,7 @@ router.get("/", async (req, res) => {
   res.send(joincodes);
 });
  */
+
 function validateJoinCode(joincode) {
   const schema = {
     join_code: Joi.string().required(),
@@ -94,11 +95,10 @@ function validateJoinCode(joincode) {
     district_id: Joi.string().allow(""),
     special_notes: Joi.string().allow(""),
 
-    group_1: Joi.object(),
-    group_2: Joi.object(),
-    group_3: Joi.object(),
-    group_4: Joi.object(),
-    group_5: Joi.object()
+    groups: Joi.array(),
+    group_default_id: Joi.string().allow(""),
+    //group_default_id: Joi.object(),
+    group_default_info: Joi.object()
   };
   return Joi.validate(joincode, schema);
 }

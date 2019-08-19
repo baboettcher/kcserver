@@ -25,9 +25,9 @@ const StudentSchema = new Schema({
   school_name: String,
   new_class_code: String,
 
-  tentative_classes: [{ type: Schema.ObjectId, ref: "addcode" }],
+  tentative_classes: [{ type: Schema.ObjectId, ref: "joincode" }],
 
-  current_classes: [{ type: Schema.ObjectId, ref: "addcode" }],
+  current_classes: [{ type: Schema.ObjectId, ref: "joincode" }],
 
   current_groups: {
     type: Array // array of objects:

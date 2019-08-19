@@ -71,7 +71,7 @@ router.post("/", async (req, res) => {
 // PUSH NEW CLASS(ADDCODE) TO ARRAY
 router.put("/addtentativeclass/:id", async (req, res) => {
   console.log("🆔🆔🆔 STUDENT PUT - ADD TENTATIVE CLASS  🆔🆔🆔");
-  // Need to validate addcode?
+  // Need to validate joincode
   // const { error } = validateAddCode(req.body);
   // if (error) return res.status(400).send(error.details[0].message);
 

@@ -45,6 +45,6 @@ const JoinCodeSchema = new Schema({
   }
 });
 
-const JoinCode = mongoose.model("addcode", JoinCodeSchema);
+const JoinCode = mongoose.model("joincode", JoinCodeSchema);
 
 module.exports = JoinCode;

@@ -31,12 +31,12 @@ const TeacherSchema = new Schema({
   // REMOVE ?
   new_class: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "addcode"
+    ref: "joincode"
   },
 
   default_class_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "addcode"
+    ref: "joincode"
   },
 
   default_class_info: {
