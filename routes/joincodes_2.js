@@ -4,6 +4,7 @@ const express = require("express");
 const JoinCode = require("../models/joincode_model");
 const router = express.Router();
 
+// ** find by joincde
 router.get("/:join_code", async (req, res) => {
   const joincode = await JoinCode.find(req.params);
   if (!joincode || !joincode[0]) {
@@ -11,6 +12,35 @@ router.get("/:join_code", async (req, res) => {
     return res.status(404).send("joincode was not found.");
   }
   res.status(200).send(joincode);
+});
+
+// findById not working, using find
+router.get("/groups/:id", async (req, res) => {
+  const joincode = await JoinCode.find({ _id: req.params.id });
+  if (!joincode || !joincode[0]) {
+    console.log("❌❌ No joincode found ❌❌");
+    return res.status(404).send("joincode was not found.");
+  }
+  res.status(200).send(joincode[0].groups);
+});
+
+router.get("/group_default_id/:id", async (req, res) => {
+  const joincode = await JoinCode.find({ _id: req.params.id });
+  if (!joincode || !joincode[0]) {
+    console.log("❌❌ No joincode found ❌❌");
+    return res.status(404).send("joincode was not found.");
+  }
+  // joincode is an array, so must use joincode[0]
+  res.status(200).send(joincode[0].group_default_id);
+});
+
+router.get("/group_default_info/:id", async (req, res) => {
+  const joincode = await JoinCode.find({ _id: req.params.id });
+  if (!joincode || !joincode[0]) {
+    console.log("❌❌ No joincode found ❌❌");
+    return res.status(404).send("joincode was not found.");
+  }
+  res.status(200).send(joincode[0].group_default_info);
 });
 
 router.post("/", async (req, res) => {
