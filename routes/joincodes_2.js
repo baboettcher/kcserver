@@ -43,6 +43,7 @@ router.get("/group_default_info/:id", async (req, res) => {
   res.status(200).send(joincode[0].group_default_info);
 });
 
+// create new joincode
 router.post("/", async (req, res) => {
   console.log("🔮🔮🔮 JOINCODE POSTED 🔮🔮🔮");
   const { error } = validateJoinCode(req.body);
@@ -50,6 +51,108 @@ router.post("/", async (req, res) => {
   let joincode = new JoinCode(req.body);
   joincode = await joincode.save();
   res.status(200).send(joincode);
+});
+
+// alt version
+router.put("/addnewgroup_alt/:id", async (req, res) => {
+  console.log("🚹🚹🚹 Add NEW group  🚹🚹🚹 ");
+  console.log("req.body", req.body);
+
+  const joincode = await JoinCode.findByIdAndUpdate(
+    { _id: req.params.id },
+    {
+      $push: {
+        groups: req.body
+      }
+    },
+    { new: true }
+  );
+
+  if (!joincode) {
+    console.log("❌❌ Problem updating record ❌❌");
+    return res.status(404).send("Updating joincode record error.");
+  }
+
+  console.log("🦑🦑🦑 SUCCESS PUSHING STUDENT TO JOINCODE 🦑🦑🦑 ");
+  res.send(joincode);
+});
+
+// CURRENT
+router.put("/addnewgroup/:id", async (req, res) => {
+  console.log("🔵🔵🔵 Add NEW group  🔵🔵🔵 ");
+
+  const joincode = await JoinCode.findById(req.params.id);
+
+  if (!joincode) {
+    console.log("❌❌ Problem updating record ❌❌");
+    return res.status(404).send("Updating joincode record error.");
+  }
+
+  try {
+    joincode.groups = joincode.groups.concat(req.body);
+    joincode.save();
+    res.status(200).send(joincode);
+  } catch (err) {
+    res.status(400).send(err.message);
+  }
+});
+
+// id of group to remove is req.body.group_id
+// :id is joincode/class id
+router.put("/removegroup/:id", async (req, res) => {
+  console.log("⛔️⛔️⛔️ REMOVE group ⛔️⛔️⛔️  ");
+
+  const joincode = await JoinCode.findById(req.params.id);
+
+  if (!joincode) {
+    console.log("❌❌ Error finding class record ❌❌");
+    return res.status(404).send("Error finding class record.");
+  }
+
+  try {
+    const groupToRemove = joincode.groups.id(req.body.group_id);
+    groupToRemove.remove();
+    joincode.save();
+    res.status(200).send(groupToRemove);
+  } catch (err) {
+    res.status(400).send(err.message);
+  }
+});
+
+// req.body ==> ID only (this should populated on loading)???
+router.put("/setdefaultgroup/:id", async (req, res) => {
+  console.log("🚹🚹🚹 Add NEW group  🚹🚹🚹 ");
+  console.log("req.body", req.body);
+
+  // const currentJoinCode = await JoinCode.findById(req.params.id);
+  //const joincode = await JoinCode.find({ _id: req.params.id });
+  // const currentGroups = currentJoinCode.toObject().groups;
+
+  const joincode = await JoinCode.findByIdAndUpdate(
+    { _id: req.params.id },
+    {
+      $set: {
+        // groups_default_info: req.body,
+        groups_default_id: "abcdeeeeeee"
+
+        // tentative_classes_cache: {
+        //   _id: req.body._id,
+        //   first_name: req.body.first_name,
+        //   last_name: req.body.last_name
+        // }
+      }
+    }
+  );
+
+  if (!joincode) {
+    console.log("❌❌ Problem updating record ❌❌");
+    return res.status(404).send("Updating joincode record error.");
+  }
+
+  console.log(
+    "🈴🈴🈴 SUCCESS SETTING DEFAULT GROUP STUDENT TO JOINCODE 🈴🈴🈴 "
+  );
+  res.send(joincode);
 });
 
 router.put("/:id", async (req, res) => {
