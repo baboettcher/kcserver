@@ -78,7 +78,7 @@ router.put("/addnewgroup_alt/:id", async (req, res) => {
 });
 
 // CURRENT
-router.put("/addnewgroup/:id", async (req, res) => {
+router.put("/addnewgrouptheme/:id", async (req, res) => {
   console.log("🔵🔵🔵 Add NEW group  🔵🔵🔵 ");
 
   const joincode = await JoinCode.findById(req.params.id);
@@ -89,7 +89,7 @@ router.put("/addnewgroup/:id", async (req, res) => {
   }
 
   try {
-    joincode.groups = joincode.groups.concat(req.body);
+    joincode.group_themes = joincode.group_themes.concat(req.body);
     joincode.save();
     res.status(200).send(joincode);
   } catch (err) {
@@ -97,9 +97,9 @@ router.put("/addnewgroup/:id", async (req, res) => {
   }
 });
 
-// id of group to remove is req.body.group_id
-// :id is joincode/class id
-router.put("/removegroup/:id", async (req, res) => {
+// id of group to remove is req.body.group_theme_id
+// :id is joincode id
+router.put("/removegrouptheme/:id", async (req, res) => {
   console.log("⛔️⛔️⛔️ REMOVE group ⛔️⛔️⛔️  ");
 
   const joincode = await JoinCode.findById(req.params.id);
@@ -110,36 +110,33 @@ router.put("/removegroup/:id", async (req, res) => {
   }
 
   try {
-    const groupToRemove = joincode.groups.id(req.body.group_id);
-    groupToRemove.remove();
+    const groupThemeToRemove = joincode.group_themes.id(
+      req.body.group_theme_id
+    );
+    groupThemeToRemove.remove();
     joincode.save();
-    res.status(200).send(groupToRemove);
+    res.status(200).send(groupThemeToRemove);
   } catch (err) {
     res.status(400).send(err.message);
   }
 });
 
 // req.body ==> ID only (this should populated on loading)???
-router.put("/setdefaultgroup/:id", async (req, res) => {
-  console.log("🚹🚹🚹 Add NEW group  🚹🚹🚹 ");
+// this should populate when GET used to populated drop down
+// NEXT: GET group themes to choose from
+router.put("/setcurrentgrouptheme/:id", async (req, res) => {
+  console.log("🐥🐥🐥 Set ACTIVE group  🐥🐥🐥 ");
   console.log("req.body", req.body);
 
-  // const currentJoinCode = await JoinCode.findById(req.params.id);
-  //const joincode = await JoinCode.find({ _id: req.params.id });
-  // const currentGroups = currentJoinCode.toObject().groups;
+  // 1) $set group_themes_current_id TO req.body.group_theme_id
+  // 2) Search array "group themes" and assign to  group_themes_current_populated
 
+  // p
   const joincode = await JoinCode.findByIdAndUpdate(
     { _id: req.params.id },
     {
       $set: {
-        // groups_default_info: req.body,
-        groups_default_id: "abcdeeeeeee"
-
-        // tentative_classes_cache: {
-        //   _id: req.body._id,
-        //   first_name: req.body.first_name,
-        //   last_name: req.body.last_name
-        // }
+        group_themes_current_id: "abcdeeeeeee"
       }
     }
   );
@@ -229,9 +226,9 @@ function validateJoinCode(joincode) {
     special_notes: Joi.string().allow(""),
 
     groups: Joi.array(),
-    group_default_id: Joi.string().allow(""),
+    group_current_id: Joi.string().allow(""),
     //group_default_id: Joi.object(),
-    group_default_info: Joi.object()
+    group_current_populated: Joi.object()
   };
   return Joi.validate(joincode, schema);
 }

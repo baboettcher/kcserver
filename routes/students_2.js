@@ -50,6 +50,8 @@ router.get("/:fb_uid", async (req, res) => {
       .status(404)
       .send("Student not found w/ fb_uid ", req.params.fb_uid);
   }
+
+  console.log("STUDENT ===>>", student);
   res.send(student);
 });
 
