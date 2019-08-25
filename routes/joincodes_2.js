@@ -114,6 +114,13 @@ router.put("/removegrouptheme/:id", async (req, res) => {
       req.body.group_theme_id
     );
     groupThemeToRemove.remove();
+
+    // check if currentGroupTheme/ID matches, remove
+    if (joincode.group_themes_current_id == req.body.group_theme_id) {
+      joincode.group_themes_current_id = "";
+      joincode.group_themes_current_populated = { defaultSet: false };
+      console.log("🌞🌞🌞 CLEARING group_themes_current_id/populated 🌞🌞🌞");
+    }
     joincode.save();
     res.status(200).send(groupThemeToRemove);
   } catch (err) {
@@ -121,35 +128,30 @@ router.put("/removegrouptheme/:id", async (req, res) => {
   }
 });
 
-// req.body ==> ID only (this should populated on loading)???
-// this should populate when GET used to populated drop down
-// NEXT: GET group themes to choose from
+// Expects: req.body.group_theme_id
+// NEXT: get groupthemes (for use in menu)
 router.put("/setcurrentgrouptheme/:id", async (req, res) => {
-  console.log("🐥🐥🐥 Set ACTIVE group  🐥🐥🐥 ");
-  console.log("req.body", req.body);
+  console.log("🐥🐥🐥 Set CURRENT theme group  🐥🐥🐥 ", req.body);
 
-  // 1) $set group_themes_current_id TO req.body.group_theme_id
-  // 2) Search array "group themes" and assign to  group_themes_current_populated
+  const joincode = await JoinCode.findById(req.params.id);
 
-  // p
-  const joincode = await JoinCode.findByIdAndUpdate(
-    { _id: req.params.id },
-    {
-      $set: {
-        group_themes_current_id: "abcdeeeeeee"
-      }
-    }
-  );
+  console.log("joincode:", joincode); //
 
-  if (!joincode) {
-    console.log("❌❌ Problem updating record ❌❌");
-    return res.status(404).send("Updating joincode record error.");
+  // check if id exists subdocument array "group_themes"
+  try {
+    const groupTheme = await joincode.group_themes.id(req.body.group_theme_id);
+
+    joincode.group_themes_current_id = groupTheme._id;
+    joincode.group_themes_current_populated = groupTheme;
+    joincode.save();
+
+    res.status(200).send(groupTheme);
+  } catch (err) {
+    console.log(
+      "❌❌ Invalid group_theme ID. Can not set current gropu theme ❌❌"
+    );
+    res.status(404).send(err.message);
   }
-
-  console.log(
-    "🈴🈴🈴 SUCCESS SETTING DEFAULT GROUP STUDENT TO JOINCODE 🈴🈴🈴 "
-  );
-  res.send(joincode);
 });
 
 router.put("/:id", async (req, res) => {
