@@ -18,7 +18,7 @@ const GroupSchema = new Schema({
   },
   motto: {
     type: String,
-    default: "Believe in yourself!"
+    default: "Believe in UFOs"
   },
   group_points: {
     type: Number,
@@ -51,7 +51,7 @@ const GroupThemeSchema = new Schema({
   },
   teacher_notes: {
     type: String,
-    default: "Explaination on this set of groups" // ie Math, Reading, Quick Game, etc
+    default: "Explanation of extraterrestrial life" // ie Math, Reading, Quick Game, etc
   },
   date_updated: { type: Date, default: Date.now },
   date_created: { type: Date, default: Date.now },

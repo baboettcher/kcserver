@@ -56,12 +56,11 @@ router.get("/group-themes-current-populated/:id", async (req, res) => {
     console.log("❌❌ No joincode found ❌❌");
     return res.status(404).send("joincode was not found.");
   }
-  console.log("Success");
   res.status(200).send(joincode[0].group_themes_current_populated);
 });
 
 // create new joincode
-// NEEDS try/catch
+// NEEDS try/catch?
 router.post("/", async (req, res) => {
   console.log("🔮🔮🔮 JOINCODE POSTED 🔮🔮🔮");
   const { error } = validateJoinCode(req.body);
@@ -96,7 +95,7 @@ router.put("/addnewgroup_alt/:id", async (req, res) => {
 });
 
 // CURRENT
-router.put("/addnewgrouptheme/:id", async (req, res) => {
+router.put("/add-new-group-theme/:id", async (req, res) => {
   console.log("🔵🔵🔵 Add NEW group  🔵🔵🔵 ");
 
   const joincode = await JoinCode.findById(req.params.id);
@@ -117,7 +116,7 @@ router.put("/addnewgrouptheme/:id", async (req, res) => {
 
 // id of group to remove is req.body.group_theme_id
 // :id is joincode id
-router.put("/removegrouptheme/:id", async (req, res) => {
+router.put("/remove-group-theme/:id", async (req, res) => {
   console.log("⛔️⛔️⛔️ REMOVE group ⛔️⛔️⛔️  ");
 
   const joincode = await JoinCode.findById(req.params.id);
@@ -140,6 +139,7 @@ router.put("/removegrouptheme/:id", async (req, res) => {
       console.log("🌞🌞🌞 CLEARING group_themes_current_id/populated 🌞🌞🌞");
     }
     joincode.save();
+    console.log("success");
     res.status(200).send(groupThemeToRemove);
   } catch (err) {
     res.status(400).send(err.message);
@@ -148,25 +148,20 @@ router.put("/removegrouptheme/:id", async (req, res) => {
 
 // Expects: req.body.group_theme_id
 // NEXT: get groupthemes (for use in menu)
-router.put("/setcurrentgrouptheme/:id", async (req, res) => {
+router.put("/set-current-group-theme/:id", async (req, res) => {
   console.log("🐥🐥🐥 Set CURRENT theme group  🐥🐥🐥 ", req.body);
-
   const joincode = await JoinCode.findById(req.params.id);
 
-  console.log("joincode:", joincode); //
-
-  // check if id exists subdocument array "group_themes"
+  // check if id exists subdoc array group_themes
   try {
     const groupTheme = await joincode.group_themes.id(req.body.group_theme_id);
-
     joincode.group_themes_current_id = groupTheme._id;
     joincode.group_themes_current_populated = groupTheme;
     joincode.save();
-
     res.status(200).send(groupTheme);
   } catch (err) {
     console.log(
-      "❌❌ Invalid group_theme ID. Can not set current gropu theme ❌❌"
+      "❌❌ Invalid group_theme ID. Can not set current group theme ❌❌"
     );
     res.status(404).send(err.message);
   }
