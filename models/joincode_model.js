@@ -110,5 +110,8 @@ const JoinCodeSchema = new Schema({
 });
 
 const JoinCode = mongoose.model("joincode", JoinCodeSchema);
+const Group = mongoose.model("group", GroupSchema);
 
-module.exports = JoinCode;
+//module.exports = JoinCode;
+module.exports.joincode = JoinCode;
+module.exports.group = Group;

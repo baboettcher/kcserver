@@ -1,7 +1,8 @@
 const Joi = require("joi");
 //const Joi = require("@hapi/joi"); UPDATE!
 const express = require("express");
-const JoinCode = require("../models/joincode_model");
+const JoinCode = require("../models/joincode_model").joincode;
+const Group = require("../models/joincode_model").group;
 const router = express.Router();
 
 // finds by joincode (not id)
@@ -211,9 +212,40 @@ router.put("/:id", async (req, res) => {
 //// ADD/REMOVE GROUP expects:
 // :id - id
 // { group_theme_id: abc123,
-//  group_id: abc123
+//  group: {object}
 // }
-router.put("/add-group-to-grouptheme/:id", async (req, res) => {});
+router.put("/add-group-to-grouptheme/:id", async (req, res) => {
+  console.log("😀😀😀 Adding GROUP 😀😀😀 ", req.body);
+  const joincode = await JoinCode.findById(req.params.id);
+
+  // check if id exists subdoc array group_themes
+  try {
+    // find correct groupTheme
+    const groupTheme = await joincode.group_themes.id(req.body.group_theme_id);
+
+    // NEXT: --------- WHAT IS GOING ON HERE! -----------CONSOLE.LOG bit by bit!
+    // 1. We need to find the correct item in group_themes
+    // 2. in THAT object, push the new Group onto group
+    // 3. Save the entire object
+    //
+
+    // find groups array in groupTheme
+    let groupsInTheme = groupTheme.groups.concat(new Group(req.body.group));
+
+    // push/concat to array
+    //groupsInTheme = groupsInTheme.concat(new Group(req.body.group));
+
+    joincode.group_themes = groupsInTheme;
+    // save
+    joincode.save();
+
+    //console.log(groupsInTheme);
+    res.status(200).send(groupsInTheme);
+  } catch (err) {
+    console.log("❌❌ Error adding group to grouptheme❌❌");
+    res.status(404).send(err.message);
+  }
+});
 
 router.put("/remove-group-from-grouptheme/:id", async (req, res) => {});
 
