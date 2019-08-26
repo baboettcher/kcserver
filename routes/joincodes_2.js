@@ -1,10 +1,11 @@
 const Joi = require("joi");
-//const Joi = require("@hapi/joi");
+//const Joi = require("@hapi/joi"); UPDATE!
 const express = require("express");
 const JoinCode = require("../models/joincode_model");
 const router = express.Router();
 
-// ** find by joincde
+// finds by joincode (not id)
+// NEEDS try/catch
 router.get("/:join_code", async (req, res) => {
   const joincode = await JoinCode.find(req.params);
   if (!joincode || !joincode[0]) {
@@ -15,35 +16,52 @@ router.get("/:join_code", async (req, res) => {
 });
 
 // findById not working, using find
+// NEEDS try/catch?
 router.get("/groups/:id", async (req, res) => {
   const joincode = await JoinCode.find({ _id: req.params.id });
   if (!joincode || !joincode[0]) {
     console.log("❌❌ No joincode found ❌❌");
-    return res.status(404).send("joincode was not found.");
+    return res.status(404).send("joincode not found.");
   }
   res.status(200).send(joincode[0].groups);
 });
 
-router.get("/group_default_id/:id", async (req, res) => {
-  const joincode = await JoinCode.find({ _id: req.params.id });
-  if (!joincode || !joincode[0]) {
-    console.log("❌❌ No joincode found ❌❌");
-    return res.status(404).send("joincode was not found.");
+// REMOVE conslogs and simplify
+router.get("/group-themes-current-id/:id", async (req, res) => {
+  // joincode is an array, so joincode[0]
+  let joincode;
+  try {
+    joincode = await JoinCode.find({ _id: req.params.id });
+    console.log(
+      "🍀🍀 group-themes-current-id found! 🍀🍀",
+      joincode[0].group_themes_current_id
+    );
+
+    res.status(200).send(joincode[0].group_themes_current_id);
+  } catch (err) {
+    if (!joincode || !joincode[0]) {
+      console.log("❌❌ No joincode found ❌❌", req.params);
+      return res.status(404).send(req.params);
+    } else {
+      console.log("❌❌ Error ❌❌", err.message);
+      res.status(400).send(err.message);
+    }
   }
-  // joincode is an array, so must use joincode[0]
-  res.status(200).send(joincode[0].group_default_id);
 });
 
-router.get("/group_default_info/:id", async (req, res) => {
+// NEEDS try/catch?
+router.get("/group-themes-current-populated/:id", async (req, res) => {
   const joincode = await JoinCode.find({ _id: req.params.id });
   if (!joincode || !joincode[0]) {
     console.log("❌❌ No joincode found ❌❌");
     return res.status(404).send("joincode was not found.");
   }
-  res.status(200).send(joincode[0].group_default_info);
+  console.log("Success");
+  res.status(200).send(joincode[0].group_themes_current_populated);
 });
 
 // create new joincode
+// NEEDS try/catch
 router.post("/", async (req, res) => {
   console.log("🔮🔮🔮 JOINCODE POSTED 🔮🔮🔮");
   const { error } = validateJoinCode(req.body);
