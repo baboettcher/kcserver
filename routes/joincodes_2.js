@@ -215,34 +215,69 @@ router.put("/:id", async (req, res) => {
 //  group: {object}
 // }
 router.put("/add-group-to-grouptheme/:id", async (req, res) => {
-  console.log("😀😀😀 Adding GROUP 😀😀😀 ", req.body);
+  console.log("😀😀😀 Adding GROUP to group_theme_id 😀😀😀 ", req.body);
   const joincode = await JoinCode.findById(req.params.id);
+  console.log("==== 1 ==== joincode =====>>>>", joincode.toObject());
 
   // check if id exists subdoc array group_themes
   try {
-    // find correct groupTheme
-    const groupTheme = await joincode.group_themes.id(req.body.group_theme_id);
+    // 1. Find THE groupTheme in all group_themes, then edit
+    const groupThemeFoundById = await joincode.group_themes.id(
+      req.body.group_theme_id
+    );
+    console.log(
+      "===== 2 === groupThemeFoundById =====>>>>",
+      groupThemeFoundById.toObject()
+    );
 
-    // NEXT: --------- WHAT IS GOING ON HERE! -----------CONSOLE.LOG bit by bit!
-    // 1. We need to find the correct item in group_themes
-    // 2. in THAT object, push the new Group onto group
-    // 3. Save the entire object
-    //
+    // 1.5 - MAKE CHANGES groupThemeFoundById
 
-    // find groups array in groupTheme
-    let groupsInTheme = groupTheme.groups.concat(new Group(req.body.group));
+    // 1.75 - UPDATE ARRAY OF GROUP THEME OBJECTS
 
-    // push/concat to array
-    //groupsInTheme = groupsInTheme.concat(new Group(req.body.group));
+    // 2. Push new group to array of groups inside group_theme
+    // NEXT: update array with actual group objects
+    // QUESIION: Why can't I push new group Objects?
 
-    joincode.group_themes = groupsInTheme;
-    // save
-    joincode.save();
+    const newGroup1 = new Group({ title: "2-Mountain Lions" });
+    const newGroup2 = new Group({ title: "2-Eagles" });
+    const newGroup3 = new Group({ title: "2-Sharks" });
+    const newGroup4 = new Group({ title: "2-Snakes" });
+    const modifiedGroup1 = groupThemeFoundById.groups.toObject();
 
-    //console.log(groupsInTheme);
-    res.status(200).send(groupsInTheme);
+    modifiedGroup1.push(newGroup1);
+    modifiedGroup1.push(newGroup2);
+    modifiedGroup1.push(newGroup3);
+    modifiedGroup1.push(newGroup4);
+
+    groupThemeFoundById.groups = modifiedGroup1;
+
+    // 3. add the updated group array to group_themes by id
+
+    // 4. Save/update the entire object
+
+    const newThing2 = await JoinCode.update(
+      { _id: req.params.id },
+      {
+        $set: {
+          grade_level: "9",
+          class_description: "KAKAKA",
+          group_themes: [groupThemeFoundById]
+        }
+      }
+    );
+
+    console.log("===== 4 === newThing2 ============ ", newThing2);
+
+    /* 
+    If you just want to change the value of favs, you can use a simpler query:
+
+    blog.findByIdAndUpdate(entityId, {$set: {'meta.favs': 56}}, function(err, doc) {
+        console.log(doc); 
+    }); */
+
+    res.status(200).send(joincode);
   } catch (err) {
-    console.log("❌❌ Error adding group to grouptheme❌❌");
+    console.log("❌❌ Error adding group to grouptheme❌❌", err.message);
     res.status(404).send(err.message);
   }
 });
@@ -292,10 +327,10 @@ function validateJoinCode(joincode) {
     district_id: Joi.string().allow(""),
     special_notes: Joi.string().allow(""),
 
-    groups: Joi.array(),
-    group_current_id: Joi.string().allow(""),
+    group_themes: Joi.array(),
+    group_themes_current_id: Joi.string().allow(""),
     //group_default_id: Joi.object(),
-    group_current_populated: Joi.object()
+    group_themes_current_populated: Joi.object()
   };
   return Joi.validate(joincode, schema);
 }

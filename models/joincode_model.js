@@ -55,7 +55,9 @@ const GroupThemeSchema = new Schema({
   },
   date_updated: { type: Date, default: Date.now },
   date_created: { type: Date, default: Date.now },
-  groups: { type: [GroupSchema], default: [] }
+
+  //groups: { type: [GroupSchema], default: [] },
+  groups: { type: [Array], default: [] }
 });
 
 const JoinCodeSchema = new Schema({
