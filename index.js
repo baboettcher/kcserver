@@ -1,7 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-// const users = require("./routes/users");  // investigate reason for this error
 
 const app = express();
 
@@ -18,10 +17,6 @@ app.use(express.static("public"));
 // use body-parser middleware
 app.use(bodyParser.json());
 
-//app.use("/users", require(users)); // investigate reason for this error
-//app.use("/users", require(students2));
-
-//app.use("/users", require("./routes/users"));
 app.use("/student", require("./routes/students_2"));
 app.use("/teacher", require("./routes/teachers_2"));
 app.use("/admin", require("./routes/admins_2"));

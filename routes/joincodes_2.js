@@ -1,4 +1,5 @@
 const Joi = require("joi");
+const _ = require("lodash");
 //const Joi = require("@hapi/joi"); UPDATE!
 const express = require("express");
 const JoinCode = require("../models/joincode_model").joincode;
@@ -209,24 +210,135 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-//// ADD/REMOVE GROUP expects:
-// :id - id
-// { group_theme_id: abc123,
-//  group: {object}
-// }
 router.put("/add-group-to-grouptheme/:id", async (req, res) => {
   console.log("😀😀😀 Adding GROUP to group_theme_id 😀😀😀 ", req.body);
+  // updating just the group_themes array
   const joincode = await JoinCode.findById(req.params.id);
-  console.log("==== 1 ==== joincode =====>>>>", joincode.toObject());
 
-  // check if id exists subdoc array group_themes
+  try {
+    // 1. Find correct groupTheme in all group_themes,
+    const groupThemeToUpdate = await joincode.group_themes.id(
+      req.body.group_theme_id
+    );
+    console.log(
+      "===== 2 groupThemeToUpdate =====>>>>",
+      groupThemeToUpdate.toObject()
+    );
+
+    // 2. Get array of the groups.
+    // Will this work? groups is an array of objects, how deep?
+    const modifiedGroup = groupThemeToUpdate.groups;
+
+    // create new Group from body
+    const newGroup = new Group(req.body.group);
+
+    // 3. Push newgroup to array of groups inside group_theme
+    modifiedGroup.push(newGroup);
+
+    // PULL
+    // userAccounts.update(
+    //   { userId: usr.userId },
+    //   { $pull: { connections : { _id : connId } } },
+    //   { safe: true },
+    //   function removeConnectionsCB(err, obj) {
+    //       ...
+    //   });
+
+    groupThemeToUpdate.groups = modifiedGroup;
+    // update with new groupThemeTo Update
+    const joincode2 = await JoinCode.update(
+      { _id: req.params.id },
+      {
+        $set: {
+          group_themes: [groupThemeToUpdate] // what about the prior?
+        }
+      }
+    );
+    console.log("===== 4 === joincode2 ============ ", joincode2);
+    res.status(200).send(joincode);
+  } catch (err) {
+    console.log("❌❌ Error adding group to grouptheme❌❌", err.message);
+    res.status(404).send(err.message);
+  }
+});
+
+router.put("/remove-group-from-grouptheme/:id", async (req, res) => {
+  console.log(
+    "🦑🦑🦑 Removing / Pop GROUP to group_theme_id 🦑🦑🦑==>",
+    req.body.group._id
+  );
+  // updating just the group_themes array
+  const joincode = await JoinCode.findById(req.params.id);
+
+  try {
+    // 1. Find correct groupTheme in all group_themes,
+    const groupThemeToUpdate = await joincode.group_themes.id(
+      req.body.group_theme_id
+    );
+    console.log(
+      "===== 2 groupThemeToUpdate - REMOVE =====>>>>",
+      groupThemeToUpdate.toObject()
+    );
+
+    // 2. Get array of the groups.
+    // Will this work? groups is an array of objects, how deep?
+    const modifiedGroup_pre = groupThemeToUpdate.groups;
+
+    // 3. Remove -- CHECK HERE!
+    const modifiedGroup = _.remove(modifiedGroup_pre, function(item) {
+      console.log(
+        "----item--->",
+        item.toObject()[0]._id.toString(),
+        typeof item.toObject()[0]._id.toString(),
+        req.body.group._id,
+        typeof req.body.group._id,
+        item.toObject()[0]._id !== req.body.group._id
+      );
+
+      // return item.toObject()[0]._id !== req.body.group._id;
+      return item.toObject()[0]._id.toString() !== req.body.group._id;
+    });
+
+    // updated with new group info
+    groupThemeToUpdate.groups = modifiedGroup;
+    // groupThemeToUpdate.groups.pop();
+    // groupThemeToUpdate.groups.pop();
+
+    // update with new groupThemeTo Update
+    const joincode2 = await JoinCode.update(
+      { _id: req.params.id },
+      {
+        $set: {
+          group_themes: [groupThemeToUpdate]
+        }
+      }
+    );
+    res.status(200).send(joincode);
+  } catch (err) {
+    console.log("❌❌ Error adding group to grouptheme❌❌", err.message);
+    console.log(err); // temp
+    res.status(404).send(err.message);
+  }
+});
+
+/* 
+If you just want to change the value of favs, you can use a simpler query:
+blog.findByIdAndUpdate(entityId, {$set: {'meta.favs': 56}}, function(err, doc) {
+    console.log(doc); 
+}); */
+
+///---- ORIG----//
+router.put("/add-group-to-grouptheme_ORIGINAL/:id", async (req, res) => {
+  console.log("😀😀😀 Adding GROUP to group_theme_id 😀😀😀 ", req.body);
+  const joincode = await JoinCode.findById(req.params.id);
+
   try {
     // 1. Find THE groupTheme in all group_themes, then edit
     const groupThemeFoundById = await joincode.group_themes.id(
       req.body.group_theme_id
     );
     console.log(
-      "===== 2 === groupThemeFoundById =====>>>>",
+      "===== 2 groupThemeFoundById =====>>>>",
       groupThemeFoundById.toObject()
     );
 
@@ -238,11 +350,12 @@ router.put("/add-group-to-grouptheme/:id", async (req, res) => {
     // NEXT: update array with actual group objects
     // QUESIION: Why can't I push new group Objects?
 
-    const newGroup1 = new Group({ title: "2-Mountain Lions" });
-    const newGroup2 = new Group({ title: "2-Eagles" });
-    const newGroup3 = new Group({ title: "2-Sharks" });
-    const newGroup4 = new Group({ title: "2-Snakes" });
-    const modifiedGroup1 = groupThemeFoundById.groups.toObject();
+    const newGroup1 = new Group({ title: "444444=== Mountain Lions" });
+    const newGroup2 = new Group({ title: "444444=== Eagles" });
+    const newGroup3 = new Group({ title: "444444=== Sharks" });
+    const newGroup4 = new Group({ title: "444444=== Snakes" });
+    //const modifiedGroup1 = groupThemeFoundById.groups.toObject();
+    const modifiedGroup1 = groupThemeFoundById.groups;
 
     modifiedGroup1.push(newGroup1);
     modifiedGroup1.push(newGroup2);
@@ -255,7 +368,7 @@ router.put("/add-group-to-grouptheme/:id", async (req, res) => {
 
     // 4. Save/update the entire object
 
-    const newThing2 = await JoinCode.update(
+    const joincode2 = await JoinCode.update(
       { _id: req.params.id },
       {
         $set: {
@@ -266,7 +379,7 @@ router.put("/add-group-to-grouptheme/:id", async (req, res) => {
       }
     );
 
-    console.log("===== 4 === newThing2 ============ ", newThing2);
+    console.log("===== 4 === joincode2 ============ ", joincode2);
 
     /* 
     If you just want to change the value of favs, you can use a simpler query:
@@ -282,6 +395,7 @@ router.put("/add-group-to-grouptheme/:id", async (req, res) => {
   }
 });
 
+//--------------//
 router.put("/remove-group-from-grouptheme/:id", async (req, res) => {});
 
 // ADD/REMOVE STUDENT expects:
