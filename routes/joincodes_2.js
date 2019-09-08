@@ -262,43 +262,40 @@ router.put("/add-group-to-grouptheme/:id", async (req, res) => {
   }
 });
 
-router.put("/remove-group-from-grouptheme/:id", async (req, res) => {
+router.put("/delete-group-from-grouptheme/:id", async (req, res) => {
   console.log(
-    "🦑🦑🦑 Removing / Pop GROUP to group_theme_id 🦑🦑🦑==>",
+    "🦑🦑🦑 Deleting group from group_theme_id 🦑🦑🦑==>",
     req.body.group._id
-  );
-  // updating just the group_themes array
+  ); // make sure points "collected" before deleting. NO going back
+
   const joincode = await JoinCode.findById(req.params.id);
 
   try {
-    // 1. Find correct groupTheme in all group_themes,
+    // 1. Find correct groupTheme
     const groupThemeToUpdate = await joincode.group_themes.id(
       req.body.group_theme_id
     );
     console.log(
-      "===== 2 groupThemeToUpdate - REMOVE =====>>>>",
+      "===== 2 groupThemeToUpdate (REMOVE GROUP)OBJECT=====>>>>",
       groupThemeToUpdate.toObject()
     );
 
-    // 2. Get array of the groups.
+    // 2. Get array of the groups from group_themes
     // Will this work? groups is an array of objects, how deep?
     const modifiedGroup_pre = groupThemeToUpdate.groups;
 
-    // 3. Remove -- CHECK HERE!
+    // 3. remove group
     const modifiedGroup = _.remove(modifiedGroup_pre, function(item) {
-      console.log(
-        "----item--->",
-        item.toObject()[0]._id.toString(),
-        typeof item.toObject()[0]._id.toString(),
-        req.body.group._id,
-        typeof req.body.group._id,
-        item.toObject()[0]._id !== req.body.group._id
-      );
-
-      // return item.toObject()[0]._id !== req.body.group._id;
       return item.toObject()[0]._id.toString() !== req.body.group._id;
     });
 
+    // 4. check if nothing was changed/deleted
+    const checkDiff = _.difference(modifiedGroup_pre, modifiedGroup);
+    if (!checkDiff.length) {
+      console.log("INTERNAL ERROR _ NOTHING DELETED");
+      return res.status(500).send("INTERNAL ERROR _ NOTHING DELETED");
+    }
+    //
     // updated with new group info
     groupThemeToUpdate.groups = modifiedGroup;
     // groupThemeToUpdate.groups.pop();
@@ -315,7 +312,7 @@ router.put("/remove-group-from-grouptheme/:id", async (req, res) => {
     );
     res.status(200).send(joincode);
   } catch (err) {
-    console.log("❌❌ Error adding group to grouptheme❌❌", err.message);
+    console.log("❌❌ Error DELETING group to grouptheme❌❌", err.message);
     console.log(err); // temp
     res.status(404).send(err.message);
   }
