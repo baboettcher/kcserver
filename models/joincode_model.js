@@ -9,12 +9,11 @@ const GroupSchema = new Schema({
   },
   avatar_url: {
     type: String,
-    default:
-      "https://images.all-free-download.com/images/graphiclarge/cartoon_goat_clip_art_22215.jpg"
+    default: "https://PLACEHOLDER.jpg"
   },
   audio_url: {
     type: String,
-    default: "https://freesound.org/people/shadeslayer99/sounds/161194/"
+    default: "https://PLACEHOLDER.mp3"
   },
   motto: {
     type: String,
@@ -47,7 +46,7 @@ const GroupSchema = new Schema({
 const GroupThemeSchema = new Schema({
   name: {
     type: String,
-    default: "ABCD Groups" // ie Math, Reading, Quick Game, etc
+    default: "ABCD Generic Groups" // ie Math, Reading, Quick Game, etc
   },
   teacher_notes: {
     type: String,
