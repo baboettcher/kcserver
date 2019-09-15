@@ -308,7 +308,7 @@ router.put("/delete-group-from-grouptheme/:joincodeid", async (req, res) => {
       return item._id.toString() !== req.body.group._id;
     });
 
-    console.log("itemToDelete =====>", itemToDelete.toObject());
+    //console.log("itemToDelete =====>", itemToDelete.toObject());
 
     // 4. check if nothing was changed/deleted
     const checkDiff = _.difference(originalGroup, modifiedGroup);
@@ -336,6 +336,7 @@ router.put("/delete-group-from-grouptheme/:joincodeid", async (req, res) => {
   }
 });
 
+// ADD POINTS
 router.put("/add-group-points/:joincodeid", async (req, res) => {
   console.log("🦑🦑🦑 Adding points 🦑🦑🦑==>", req.body);
   // NOTE: make sure points "collected" before deleting. NO going back
@@ -354,7 +355,7 @@ router.put("/add-group-points/:joincodeid", async (req, res) => {
     // 2. Get array of the groups from group_themes and find targetGroup
     let allGroups = groupThemeToUpdate.groups;
 
-    const targetGroup = allGroups.id(req.body.group_id); // id not a function
+    const targetGroup = allGroups.id(req.body.group_id);
 
     //console.log("targetGroup==>>", targetGroup.toObject());
 
@@ -381,19 +382,66 @@ router.put("/add-group-points/:joincodeid", async (req, res) => {
   }
 });
 
-router.put("/remove-group-from-grouptheme/:id", async (req, res) => {});
+// SUBTRACT POINTS
+router.put("/subtract-group-points/:joincodeid", async (req, res) => {
+  console.log("🔺🔺🔺 Subtracting points 🔺🔺🔺", req.body);
 
-// ADD/REMOVE STUDENT expects:
-// :id - id
-// { group_theme_id: abc123,
-//  group_id: abc123,
-// students : [] <--- concat to this array
-// }
+  const joincode = await JoinCode.findById(req.params.joincodeid);
+
+  try {
+    const groupThemeToUpdate = await joincode.group_themes.id(
+      req.body.group_theme_id
+    );
+
+    let allGroups = groupThemeToUpdate.groups;
+
+    const targetGroup = allGroups.id(req.body.group_id);
+
+    targetGroup.group_points =
+      targetGroup.group_points - req.body.points_to_subtract;
+
+    await JoinCode.update(
+      { _id: req.params.joincodeid },
+      {
+        $set: {
+          group_themes: [groupThemeToUpdate]
+        }
+      }
+    );
+
+    res.status(200).send(targetGroup);
+  } catch (err) {
+    console.log("❌❌ Error updating group with points ❌❌", err.message);
+    console.log(err); // temp
+    res.status(404).send(err.message);
+  }
+});
+
+/* 
+      ADD/REMOVE STUDENT expects:
+      :id - id
+      { group_theme_id: abc123,
+      group_id: abc123,
+      students : [] <--- concat to this array
+      }
+  */
+
 router.put("/add-student-to-group/:id", async (req, res) => {});
 
 router.put("/remove-student-from-group/:id", async (req, res) => {});
 
-// NEXT: get groupthemes (for use in menu)
+// NEXT:
+/* 
+
+subtract-group-points 
+add-student-to-group
+remove-student-from-group
+edit-group-info 
+
+-->> populate!! -- how and when??
+ 
+get groupthemes (for use in menu)
+ */
 
 /* router.delete("/:id", async (req, res) => {
   const joincode = await JoinCode.findByIdAndRemove(req.params.id);
