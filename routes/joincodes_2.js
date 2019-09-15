@@ -121,8 +121,7 @@ router.put("/:id", async (req, res) => {
 
 // ADD STUDENT TO JOINCODECLASS -- ALT
 router.put("/add-new-group_ALT/:id", async (req, res) => {
-  console.log("🚹🚹🚹 Add NEW group  🚹🚹🚹 ");
-  console.log("req.body", req.body);
+  console.log("🚹🚹🚹 Add NEW group  🚹🚹🚹 ", req.body);
 
   const joincode = await JoinCode.findByIdAndUpdate(
     { _id: req.params.id },
@@ -144,7 +143,7 @@ router.put("/add-new-group_ALT/:id", async (req, res) => {
 });
 
 // CREATE NEW THEME_ORIG
-router.put("/add-new-grouptheme_ORIG/:id", async (req, res) => {
+router.put("/add-grouptheme_ORIG/:id", async (req, res) => {
   // LATER  :id should be :joincode_id
   console.log("🔵🔵🔵 Add NEW group  🔵🔵🔵 ");
 
@@ -165,7 +164,7 @@ router.put("/add-new-grouptheme_ORIG/:id", async (req, res) => {
 });
 
 // CREATE NEW THEME_NEW
-router.put("/add-new-grouptheme_NEW/:id", async (req, res) => {
+router.put("/add-grouptheme_NEW/:id", async (req, res) => {
   // LATER  :id should be :joincode_id
   console.log("🔵🔵🔵 Add NEW group  🔵🔵🔵 ");
 
@@ -186,8 +185,7 @@ router.put("/add-new-grouptheme_NEW/:id", async (req, res) => {
   }
 });
 
-// *** >>> FIX <<< ***  - This current zaps All themes for given joincode id
-//REMOVE THEME
+//REMOVE THEME (fixed, but still needs testing)
 router.put("/remove-grouptheme/:id", async (req, res) => {
   // LATER  :id should be :joincode_id
   // id of group to remove is req.body.group_theme_id
@@ -280,7 +278,7 @@ router.put("/add-group-to-grouptheme/:joincodeid", async (req, res) => {
   }
 });
 
-// DELETE GROUP:
+// DELETE GROUP
 router.put("/delete-group-from-grouptheme/:joincodeid", async (req, res) => {
   // This should not be needed elsewhere. Members of group are populated from here on load, no reference is make in student record
   console.log(
@@ -345,18 +343,21 @@ router.put("/add-group-points/:joincodeid", async (req, res) => {
 
   try {
     // 1. Find groupThemeToUpdate using the id method which is called on array group_themes from the original joincode. In the schema, group_themes is an array of [GroupTheme]'s
-    const groupThemeToUpdate = await joincode.group_themes.id(
+    /// #### BUG ????  -- this updates only a single group theme
+    // try a second group theme to test
+    // all other will "ZAP' when one is updated
+    const allCurrentGroupThemes = joincode.group_themes;
+
+    const groupThemeToUpdate = await allCurrentGroupThemes.id(
       req.body.group_theme_id
     );
-
     // toObject hides all the inner goodies, but we lose the id method
     // const groupThemeToUpdate2 = groupThemeToUpdate.toObject();
 
     // 2. Get array of the groups from group_themes and find targetGroup
-    let allGroups = groupThemeToUpdate.groups;
+    const allGroups = groupThemeToUpdate.groups;
 
     const targetGroup = allGroups.id(req.body.group_id);
-
     //console.log("targetGroup==>>", targetGroup.toObject());
 
     // 3. modify object
@@ -364,8 +365,20 @@ router.put("/add-group-points/:joincodeid", async (req, res) => {
       targetGroup.group_points + req.body.points_to_add;
     //NEXT: push transaction record and hash to group_points_transactions
 
-    // 4.  update db
+    // 4. remove pre_targetGroup
+    // NEXT -- REMOVE THE OLD VERION!
+
+    // 5. add new (see double here)
+    allCurrentGroupThemes.push(targetGroup);
+
+    // 6.  update db
     await JoinCode.update(
+      { _id: req.params.joincodeid },
+      {
+        $set: { group_themes: allCurrentGroupThemes }
+      }
+    );
+    /*     await JoinCode.update(
       { _id: req.params.joincodeid },
       {
         $set: {
@@ -373,7 +386,7 @@ router.put("/add-group-points/:joincodeid", async (req, res) => {
         }
       }
     );
-
+ */
     res.status(200).send(targetGroup);
   } catch (err) {
     console.log("❌❌ Error updating group with points ❌❌", err.message);
@@ -412,6 +425,52 @@ router.put("/subtract-group-points/:joincodeid", async (req, res) => {
     res.status(200).send(targetGroup);
   } catch (err) {
     console.log("❌❌ Error updating group with points ❌❌", err.message);
+    console.log(err); // temp
+    res.status(404).send(err.message);
+  }
+});
+
+/* 
+      ADD/REMOVE STUDENT expects:
+      :joincodeid
+      { group_theme_id: abc123,
+      group_id: abc123,
+      newGoupData:{
+        // NEW 
+      }
+      }
+  */
+
+router.put("/edit-group/:joincodeid", async (req, res) => {
+  console.log("✏️✏️✏️ Edit Group ✏️✏️✏️", req.body);
+
+  const joincode = await JoinCode.findById(req.params.joincodeid);
+
+  try {
+    const groupThemeToUpdate = await joincode.group_themes.id(
+      req.body.group_theme_id
+    );
+
+    let allGroups = groupThemeToUpdate.groups;
+
+    // const targetGroup = allGroups.id(req.body.group_id);
+    // instead of id the group, pop it off and push the new one
+    // but what about the group id?
+    // how will we be getting the group id later?
+    // will it matter of this changes with very update?
+
+    await JoinCode.update(
+      { _id: req.params.joincodeid },
+      {
+        $set: {
+          group_themes: [groupThemeToUpdate]
+        }
+      }
+    );
+
+    res.status(200).send(targetGroup);
+  } catch (err) {
+    console.log("❌❌ Error editing group ❌❌", err.message);
     console.log(err); // temp
     res.status(404).send(err.message);
   }
