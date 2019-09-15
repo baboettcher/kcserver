@@ -296,21 +296,22 @@ router.put("/delete-group-from-grouptheme/:joincodeid", async (req, res) => {
       req.body.group_theme_id
     );
     // 2. Get array of the groups from group_themes
-    const modifiedGroup_pre = groupThemeToUpdate.groups;
+    const originalGroup = groupThemeToUpdate.groups;
 
-    // 3. remove group
-    const modifiedGroup = _.remove(modifiedGroup_pre, function(item) {
-      console.log("item==>", item);
-      // NEXT, run
-      // http://127.0.0.1:4000/joincode/add-group-points/5d7455ddeb70ce83355fa317
-      // and try to use .id on groups array
-      return item._id.toString() !== req.body.group._id;
-      // return item.toObject()[0]._id.toString() !== req.body.group._id;
-      // due to schema change
+    // 3. This just for res.send (consolidate this and part 3 later)
+    const itemToDelete = _.find(originalGroup, function(item) {
+      return item._id.toString() === req.body.group._id;
     });
 
+    // 3. remove group
+    const modifiedGroup = _.remove(originalGroup, function(item) {
+      return item._id.toString() !== req.body.group._id;
+    });
+
+    console.log("itemToDelete =====>", itemToDelete.toObject());
+
     // 4. check if nothing was changed/deleted
-    const checkDiff = _.difference(modifiedGroup_pre, modifiedGroup);
+    const checkDiff = _.difference(originalGroup, modifiedGroup);
     if (!checkDiff.length) {
       return res.status(500).send("INTERNAL ERROR _ NOTHING DELETED");
     }
@@ -327,7 +328,7 @@ router.put("/delete-group-from-grouptheme/:joincodeid", async (req, res) => {
         }
       }
     );
-    res.status(200).send(joincode);
+    res.status(200).send(itemToDelete);
   } catch (err) {
     console.log("❌❌ Error DELETING group to grouptheme❌❌", err.message);
     console.log(err); // temp
@@ -336,7 +337,8 @@ router.put("/delete-group-from-grouptheme/:joincodeid", async (req, res) => {
 });
 
 router.put("/add-group-points/:joincodeid", async (req, res) => {
-  console.log("🦑🦑🦑 Adding points 🦑🦑🦑==>", req.body); // make sure points "collected" before deleting. NO going back
+  console.log("🦑🦑🦑 Adding points 🦑🦑🦑==>", req.body);
+  // NOTE: make sure points "collected" before deleting. NO going back
 
   const joincode = await JoinCode.findById(req.params.joincodeid);
 
@@ -346,60 +348,32 @@ router.put("/add-group-points/:joincodeid", async (req, res) => {
       req.body.group_theme_id
     );
 
-    // toObject hides all the inner goodies
-    //const groupThemeToUpdate2 = groupThemeToUpdate.toObject();
-    const groupThemeToUpdate2 = groupThemeToUpdate;
+    // toObject hides all the inner goodies, but we lose the id method
+    // const groupThemeToUpdate2 = groupThemeToUpdate.toObject();
 
     // 2. Get array of the groups from group_themes and find targetGroup
-    let allGroups = groupThemeToUpdate2.groups;
-
-    // console.log("ALL GROUPS[0]", allGroups[0]);
-    // console.log("ALL GROUPS[1]", allGroups[1]);
-
-    // console.log(
-    //   "==========test=================",
-    //   allGroups,
-    //   "=============================="
-    // );
-
-    // const test = allGroups.toBSON();
-    // console.log(
-    //   "========== test = allGroups.toBSON==============",
-    //   test,
-    //   "=============================="
-    // );
+    let allGroups = groupThemeToUpdate.groups;
 
     const targetGroup = allGroups.id(req.body.group_id); // id not a function
-    console.log("targetGroup==>>", targetGroup.toObject());
 
-    // const targetGroup = _.find(allGroups, { _id: req.body.group_id }); // undefined
-    // const targetGroup = _.find(allGroups, { "_id.$oid": req.body.group_id });
-    // const targetGroup = _.find(allGroups, { motto: "5555" }); // works
-    // const targetGroup = _.find(allGroups, { group_points: 1 }); // works
+    //console.log("targetGroup==>>", targetGroup.toObject());
 
-    //TIME FOR STACK OVERFLOW!!
+    // 3. modify object
+    targetGroup.group_points =
+      targetGroup.group_points + req.body.points_to_add;
+    //NEXT: push transaction record and hash to group_points_transactions
 
-    //console.log("TG-->", targetGroup); //
-    // console.log("TG-->", targetGroup); //
-
-    //console.log("ID-->2", targetGroup._id["$oid"]);
-    //console.log("ID-->", targetGroup._id.toString());
-
-    //targetGroup.group_points = targetGroup.group_points + req.body.group_points;
-
-    // updated with new group info
-    // groupThemeToUpdate.groups = targetGroup;
-
-    // 3.  update with new groupThemeTo Update
-    /*     const joincode2 = await JoinCode.update(
+    // 4.  update db
+    await JoinCode.update(
       { _id: req.params.joincodeid },
       {
         $set: {
           group_themes: [groupThemeToUpdate]
         }
       }
-    ); */
-    res.status(200).send(joincode);
+    );
+
+    res.status(200).send(targetGroup);
   } catch (err) {
     console.log("❌❌ Error updating group with points ❌❌", err.message);
     console.log(err); // temp
@@ -407,13 +381,6 @@ router.put("/add-group-points/:joincodeid", async (req, res) => {
   }
 });
 
-/* 
-If you just want to change the value of favs, you can use a simpler query:
-blog.findByIdAndUpdate(entityId, {$set: {'meta.favs': 56}}, function(err, doc) {
-    console.log(doc); 
-}); */
-
-//--------------//
 router.put("/remove-group-from-grouptheme/:id", async (req, res) => {});
 
 // ADD/REMOVE STUDENT expects:
