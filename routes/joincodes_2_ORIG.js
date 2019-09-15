@@ -355,22 +355,9 @@ router.put("/add-group-points/:joincodeid", async (req, res) => {
 
     // console.log("ALL GROUPS[0]", allGroups[0]);
     // console.log("ALL GROUPS[1]", allGroups[1]);
-
-    // console.log(
-    //   "==========test=================",
-    //   allGroups,
-    //   "=============================="
-    // );
-
-    // const test = allGroups.toBSON();
-    // console.log(
-    //   "========== test = allGroups.toBSON==============",
-    //   test,
-    //   "=============================="
-    // );
+    console.log("ALL GROUPS--->", allGroups);
 
     const targetGroup = allGroups.id(req.body.group_id); // id not a function
-    console.log("targetGroup==>>", targetGroup.toObject());
 
     // const targetGroup = _.find(allGroups, { _id: req.body.group_id }); // undefined
     // const targetGroup = _.find(allGroups, { "_id.$oid": req.body.group_id });
@@ -379,7 +366,7 @@ router.put("/add-group-points/:joincodeid", async (req, res) => {
 
     //TIME FOR STACK OVERFLOW!!
 
-    //console.log("TG-->", targetGroup); //
+    console.log("TG-->", targetGroup); //
     // console.log("TG-->", targetGroup); //
 
     //console.log("ID-->2", targetGroup._id["$oid"]);
@@ -439,7 +426,7 @@ router.get("/", async (req, res) => {
   console.log("GET all joincodes");
   const joincodes = await JoinCode.find().sort("name");
   res.send(joincodes);
-});  
+});
  */
 
 function validateJoinCode(joincode) {

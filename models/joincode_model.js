@@ -55,8 +55,8 @@ const GroupThemeSchema = new Schema({
   date_updated: { type: Date, default: Date.now },
   date_created: { type: Date, default: Date.now },
 
-  // groups: { type: [GroupSchema], default: [] },
-  groups: { type: Array, default: [] }
+  groups: { type: [GroupSchema], default: [] } // originally this did not work
+  //groups: { type: Array, default: [] }
 });
 
 const JoinCodeSchema = new Schema({
@@ -116,5 +116,5 @@ const Group = mongoose.model("group", GroupSchema);
 
 //module.exports = JoinCode;
 module.exports.joincode = JoinCode;
-module.exports.group = Group;
 module.exports.grouptheme = GroupTheme;
+module.exports.group = Group;
