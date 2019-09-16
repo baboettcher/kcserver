@@ -246,10 +246,15 @@ router.put("/add-group-to-grouptheme/:joincodeid", async (req, res) => {
   const joincode = await JoinCode.findById(req.params.joincodeid);
 
   try {
-    // 1. Find correct groupTheme in all group_themes,
-    const groupThemeToUpdate = await joincode.group_themes.id(
+    // 1. Find correct groupTheme in all group_themes
+    // why await? we already have the joincode object
+    /*     const groupThemeToUpdate = await joincode.group_themes.id(
       req.body.group_theme_id
-    );
+    ); */
+
+    const allGroupThemes = joincode.group_themes;
+
+    const groupThemeToUpdate = allGroupThemes.id(req.body.group_theme_id);
 
     // 2. Get array of the groups.
     const modifiedGroups = groupThemeToUpdate.groups;
@@ -259,18 +264,21 @@ router.put("/add-group-to-grouptheme/:joincodeid", async (req, res) => {
     // 3. Push newgroup to array of groups inside group_theme
     modifiedGroups.push(newGroup);
 
-    groupThemeToUpdate.groups = modifiedGroups;
+    // unncessary / saved by reference
+    // groupThemeToUpdate.groups = modifiedGroups;
 
     // update with new groupThemeTo Update
-    const joincode2 = await JoinCode.update(
+
+    await JoinCode.update(
       { _id: req.params.joincodeid },
       {
         $set: {
-          //group_themes: [groupThemeToUpdate]
-          group_themes: [groupThemeToUpdate]
-        } // add the argurment so changes reflected
+          //issue: all group_themes are being replace by the current
+          group_themes: allGroupThemes
+        }
       }
     );
+
     res.status(200).send(joincode); //note: joincode2 sends unexpected results
   } catch (err) {
     console.log("❌❌ Error adding group to grouptheme ❌❌", err.message);
