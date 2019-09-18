@@ -246,12 +246,6 @@ router.put("/add-group-to-grouptheme/:joincodeid", async (req, res) => {
   const joincode = await JoinCode.findById(req.params.joincodeid);
 
   try {
-    // 1. Find correct groupTheme in all group_themes
-    // why await? we already have the joincode object
-    /*     const groupThemeToUpdate = await joincode.group_themes.id(
-      req.body.group_theme_id
-    ); */
-
     const allGroupThemes = joincode.group_themes;
 
     const groupThemeToUpdate = allGroupThemes.id(req.body.group_theme_id);
@@ -264,16 +258,10 @@ router.put("/add-group-to-grouptheme/:joincodeid", async (req, res) => {
     // 3. Push newgroup to array of groups inside group_theme
     modifiedGroups.push(newGroup);
 
-    // unncessary / saved by reference
-    // groupThemeToUpdate.groups = modifiedGroups;
-
-    // update with new groupThemeTo Update
-
     await JoinCode.update(
       { _id: req.params.joincodeid },
       {
         $set: {
-          //issue: all group_themes are being replace by the current
           group_themes: allGroupThemes
         }
       }
@@ -297,43 +285,54 @@ router.put("/delete-group-from-grouptheme/:joincodeid", async (req, res) => {
   const joincode = await JoinCode.findById(req.params.joincodeid);
 
   try {
+    // save entire jc object
+    const allGroupThemes = joincode.group_themes;
+
     // 1. Find correct groupTheme
-    const groupThemeToUpdate = await joincode.group_themes.id(
+    // remove asych
+    const groupThemeToUpdate = joincode.group_themes.id(
       req.body.group_theme_id
     );
     // 2. Get array of the groups from group_themes
-    const originalGroup = groupThemeToUpdate.groups;
+    const originalGroups = groupThemeToUpdate.groups;
 
-    // 3. This just for res.send (consolidate this and part 3 later)
-    const itemToDelete = _.find(originalGroup, function(item) {
+    // 3. save the group being removed for response object
+    const itemToDelete = _.find(originalGroups, function(item) {
       return item._id.toString() === req.body.group._id;
     });
 
-    // 3. remove group
-    const modifiedGroup = _.remove(originalGroup, function(item) {
+    const modifiedGroup = _.remove(originalGroups, function(item) {
       return item._id.toString() !== req.body.group._id;
     });
 
-    //console.log("itemToDelete =====>", itemToDelete.toObject());
-
     // 4. check if nothing was changed/deleted
-    const checkDiff = _.difference(originalGroup, modifiedGroup);
+    const checkDiff = _.difference(originalGroups, modifiedGroup);
     if (!checkDiff.length) {
-      return res.status(500).send("INTERNAL ERROR _ NOTHING DELETED");
+      return res.status(500).send("INTERNAL CONFUSION _ NOTHING DELETED");
     }
 
-    // updated with new group info
+    // 5. assign new group info
     groupThemeToUpdate.groups = modifiedGroup;
 
-    // update with new groupThemeTo Update
-    const joincode2 = await JoinCode.update(
+    /*     await JoinCode.update(
       { _id: req.params.joincodeid },
       {
         $set: {
           group_themes: [groupThemeToUpdate]
         }
       }
+      ); */
+
+    // 6. update with new groupThemeTo Update
+    await JoinCode.update(
+      { _id: req.params.joincodeid },
+      {
+        $set: {
+          group_themes: allGroupThemes
+        }
+      }
     );
+
     res.status(200).send(itemToDelete);
   } catch (err) {
     console.log("❌❌ Error DELETING group to grouptheme❌❌", err.message);
