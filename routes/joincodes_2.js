@@ -314,15 +314,6 @@ router.put("/delete-group-from-grouptheme/:joincodeid", async (req, res) => {
     // 5. assign new group info
     groupThemeToUpdate.groups = modifiedGroup;
 
-    /*     await JoinCode.update(
-      { _id: req.params.joincodeid },
-      {
-        $set: {
-          group_themes: [groupThemeToUpdate]
-        }
-      }
-      ); */
-
     // 6. update with new groupThemeTo Update
     await JoinCode.update(
       { _id: req.params.joincodeid },
@@ -349,12 +340,9 @@ router.put("/add-group-points/:joincodeid", async (req, res) => {
   const joincode = await JoinCode.findById(req.params.joincodeid);
 
   try {
-    // 1. Find groupThemeToUpdate using the id method which is called on array group_themes from the original joincode. In the schema, group_themes is an array of [GroupTheme]'s
-    /// #### BUG ????  -- this updates only a single group theme
-    // try a second group theme to test
-    // all other will "ZAP' when one is updated
     const allCurrentGroupThemes = joincode.group_themes;
 
+    // 1. Find groupThemeToUpdate using the id
     const groupThemeToUpdate = await allCurrentGroupThemes.id(
       req.body.group_theme_id
     );
@@ -372,28 +360,14 @@ router.put("/add-group-points/:joincodeid", async (req, res) => {
       targetGroup.group_points + req.body.points_to_add;
     //NEXT: push transaction record and hash to group_points_transactions
 
-    // 4. remove pre_targetGroup
-    // NEXT -- REMOVE THE OLD VERION!
-
-    // 5. add new (see double here)
-    allCurrentGroupThemes.push(targetGroup);
-
-    // 6.  update db
+    // 4.  update db
     await JoinCode.update(
       { _id: req.params.joincodeid },
       {
         $set: { group_themes: allCurrentGroupThemes }
       }
     );
-    /*     await JoinCode.update(
-      { _id: req.params.joincodeid },
-      {
-        $set: {
-          group_themes: [groupThemeToUpdate]
-        }
-      }
-    );
- */
+
     res.status(200).send(targetGroup);
   } catch (err) {
     console.log("❌❌ Error updating group with points ❌❌", err.message);
@@ -409,6 +383,8 @@ router.put("/subtract-group-points/:joincodeid", async (req, res) => {
   const joincode = await JoinCode.findById(req.params.joincodeid);
 
   try {
+    const allCurrentGroupThemes = joincode.group_themes;
+
     const groupThemeToUpdate = await joincode.group_themes.id(
       req.body.group_theme_id
     );
@@ -424,7 +400,7 @@ router.put("/subtract-group-points/:joincodeid", async (req, res) => {
       { _id: req.params.joincodeid },
       {
         $set: {
-          group_themes: [groupThemeToUpdate]
+          group_themes: allCurrentGroupThemes
         }
       }
     );
