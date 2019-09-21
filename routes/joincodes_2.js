@@ -142,33 +142,11 @@ router.put("/add-new-group_ALT/:id", async (req, res) => {
   res.send(joincode);
 });
 
-// CREATE NEW THEME_ORIG
-router.put("/add-grouptheme_ORIG/:id", async (req, res) => {
-  // LATER  :id should be :joincode_id
-  console.log("🔵🔵🔵 Add NEW group  🔵🔵🔵 ");
+// ADD GROUPTHEME
+router.put("/add-grouptheme/:joincodeid", async (req, res) => {
+  console.log("🔵🔵🔵 Add NEW groupTheme  🔵🔵🔵 ");
 
-  const joincode = await JoinCode.findById(req.params.id);
-
-  if (!joincode) {
-    console.log("❌❌ Problem updating record ❌❌");
-    return res.status(404).send("Updating joincode record error.");
-  }
-
-  try {
-    joincode.group_themes = joincode.group_themes.concat(req.body);
-    joincode.save();
-    res.status(200).send(joincode);
-  } catch (err) {
-    res.status(400).send(err.message);
-  }
-});
-
-// CREATE NEW THEME_NEW
-router.put("/add-grouptheme_NEW/:id", async (req, res) => {
-  // LATER  :id should be :joincode_id
-  console.log("🔵🔵🔵 Add NEW group  🔵🔵🔵 ");
-
-  const joincode = await JoinCode.findById(req.params.id);
+  const joincode = await JoinCode.findById(req.params.joincodeid);
 
   if (!joincode) {
     console.log("❌❌ Problem updating record ❌❌");
@@ -185,13 +163,12 @@ router.put("/add-grouptheme_NEW/:id", async (req, res) => {
   }
 });
 
-//REMOVE THEME (fixed, but still needs testing)
-router.put("/remove-grouptheme/:id", async (req, res) => {
-  // LATER  :id should be :joincode_id
+//REMOVE GROUPTHEME
+router.put("/remove-grouptheme/:joincodeid", async (req, res) => {
   // id of group to remove is req.body.group_theme_id
-  console.log("⛔️⛔️⛔️REMOVE group ⛔️⛔️⛔️  ");
+  console.log("⛔️⛔️⛔️REMOVE groupTheme ⛔️⛔️⛔️  ");
 
-  const joincode = await JoinCode.findById(req.params.id);
+  const joincode = await JoinCode.findById(req.params.joincodeid);
 
   if (!joincode) {
     console.log("❌❌ Error finding class record ❌❌");
@@ -213,6 +190,60 @@ router.put("/remove-grouptheme/:id", async (req, res) => {
     joincode.save();
     console.log("success");
     res.status(200).send(groupThemeToRemove);
+  } catch (err) {
+    res.status(400).send(err.message);
+  }
+});
+
+// EDIT THEME
+/* 
+  groupId:
+  groupThemeChanges: {
+    a:___
+    b:___
+  }
+ */
+
+router.put("/edit-grouptheme/:joincodeid", async (req, res) => {
+  console.log("🚧🚧🚧 EDIT groupTheme  🚧🚧🚧 ");
+
+  const joincode = await JoinCode.findById(req.params.joincodeid);
+
+  try {
+    const { groupThemeChanges } = req.body;
+    const allGroupThemes = joincode.group_themes;
+    const allGroupThemes_cleanedUp = joincode.group_themes.toObject();
+
+    const themeToUpdate = allGroupThemes.id(req.body.group_theme_id);
+
+    console.log(
+      "------------------------themeToUpdate------------------------->\n",
+      themeToUpdate.toObject()
+    );
+    // const themeToUpdate = allGroupThemes_cleanedUp.id(req.body.group_theme_id);
+    //const updatedTheme = { ...themeToUpdate, ...groupThemeChanges };
+    const abc = { a: "cat", b: "dog", name: "NEW Math Club" };
+    const updatedTheme_test = { ...themeToUpdate.toObject(), ...abc };
+
+    console.log(
+      "------------------------updatedTheme_test------------------------->\n",
+      updatedTheme_test
+    );
+    /* 
+    console.log(
+      // issue: merging the objects not smooth
+      //       toObject not recognized on the array OF groupThemes
+      "-------------------updatedTheme-------------------------->\n",
+      updatedTheme.toObject()
+    );
+ */
+
+    /*     console.log(
+      "------------------------allGroupThemes_cleanedUp--------------------------\n",
+      allGroupThemes_cleanedUp
+    ); */
+
+    res.status(200).send(joincode);
   } catch (err) {
     res.status(400).send(err.message);
   }
