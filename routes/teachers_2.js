@@ -6,7 +6,7 @@ const express = require("express");
 
 const Teacher = require("../models/teacher_model");
 const Student = require("../models/student_model");
-const JoinCode = require("../models/joincode_model");
+//const JoinCode = require("../models/joincode_model");
 
 const router = express.Router();
 
