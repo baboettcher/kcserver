@@ -211,39 +211,45 @@ router.put("/edit-grouptheme/:joincodeid", async (req, res) => {
 
   try {
     const { groupThemeChanges } = req.body;
+
     const allGroupThemes = joincode.group_themes;
-    const allGroupThemes_cleanedUp = joincode.group_themes.toObject();
+    //const allGroupThemes_cleanedUp = joincode.group_themes.toObject();
 
     const themeToUpdate = allGroupThemes.id(req.body.group_theme_id);
 
-    console.log(
-      "------------------------themeToUpdate------------------------->\n",
-      themeToUpdate.toObject()
-    );
-    // const themeToUpdate = allGroupThemes_cleanedUp.id(req.body.group_theme_id);
-    //const updatedTheme = { ...themeToUpdate, ...groupThemeChanges };
-    const abc = { a: "cat", b: "dog", name: "NEW Math Club" };
-    const updatedTheme_test = { ...themeToUpdate.toObject(), ...abc };
+    const updatedTheme_test1_notToObject = {
+      ...themeToUpdate,
+      ...groupThemeChanges
+    };
 
-    console.log(
-      "------------------------updatedTheme_test------------------------->\n",
-      updatedTheme_test
-    );
-    /* 
-    console.log(
-      // issue: merging the objects not smooth
-      //       toObject not recognized on the array OF groupThemes
-      "-------------------updatedTheme-------------------------->\n",
-      updatedTheme.toObject()
-    );
- */
+    const updatedTheme_test2_toObject = {
+      ...themeToUpdate.toObject(),
+      ...groupThemeChanges
+    };
 
-    /*     console.log(
-      "------------------------allGroupThemes_cleanedUp--------------------------\n",
-      allGroupThemes_cleanedUp
-    ); */
+    // 3. remove old theme
+    const itemToDelete = _.find(allGroupThemes, function(item) {
+      return item._id.toString() === req.body.group_theme_id;
+    });
 
-    res.status(200).send(joincode);
+    const allGroupThemes_MODIFIED = _.remove(allGroupThemes, function(item) {
+      return item._id.toString() !== req.body.group_theme_id;
+    });
+
+    allGroupThemes_MODIFIED.push(updatedTheme_test2_toObject);
+
+    // 5. update the db
+    await JoinCode.update(
+      { _id: req.params.joincodeid },
+      {
+        $set: {
+          group_themes: allGroupThemes_MODIFIED
+        }
+      }
+    );
+
+    // send back updated groupTheme
+    res.status(200).send(updatedTheme_test2_toObject);
   } catch (err) {
     res.status(400).send(err.message);
   }
