@@ -6,7 +6,7 @@ const JoinCode = require("../models/joincode_model").joincode;
 const GroupTheme = require("../models/joincode_model").grouptheme;
 const Group = require("../models/joincode_model").group;
 
-const removeItem = require("./helpers/removeItem.js");
+const removeItemGroupTheme = require("./helpers/removeItem.js");
 
 const router = express.Router();
 
@@ -211,18 +211,18 @@ router.put("/edit-grouptheme/:joincodeid", async (req, res) => {
     };
 
     // 3. remove old theme (refactored to helpers)
-    const { modififedGroupThemes, itemToDelete } = removeItem(
+    const { modifiedGroupThemes, itemDeleted } = removeItemGroupTheme(
       allGroupThemes,
       req.body.group_theme_id
     );
 
-    modififedGroupThemes.push(updatedTheme);
+    modifiedGroupThemes.push(updatedTheme);
 
     await JoinCode.update(
       { _id: req.params.joincodeid },
       {
         $set: {
-          group_themes: modififedGroupThemes
+          group_themes: modifiedGroupThemes
         }
       }
     );
@@ -434,41 +434,32 @@ router.put("/add-students-to-group/:joincodeid", async (req, res) => {
          "new_members_ids": []
         } 
   */
-
-  const { new_member_ids } = req.body;
-  console.log(" 🤪🤪🤪Adding students to group 🤪🤪🤪 ==>", new_member_ids);
-
   const joincode = await JoinCode.findById(req.params.joincodeid);
+  const { new_members_ids } = req.body;
+  console.log(" 🤪🤪🤪Adding students to group 🤪🤪🤪 ==>", new_members_ids);
 
   try {
+    const { group_theme_id, group_id } = req.body;
     const allCurrentGroupThemes = joincode.group_themes;
-    const groupThemeToUpdate = await allCurrentGroupThemes.id(
-      req.body.group_theme_id
-    );
+    const groupThemeToUpdate = await allCurrentGroupThemes.id(group_theme_id);
 
     // Get array of the groups and targetGroup
     const allGroups = groupThemeToUpdate.groups;
-    const targetGroup = allGroups.id(req.body.group_id);
+    const targetGroup = allGroups.id(group_id);
     const currentGroupMembers = targetGroup.members_ids;
-    const updatedGroupMembers = currentGroupMembers.concat(new_member_ids);
-    console.log("updatedGroupMembers====>>>", updatedGroupMembers);
+    // LATER: check to see if any members being added are already present.
+    // indexOF or find
 
-    console.log("RemoveItem==>", removeItem("All good in the neighborhood!"));
-
-    // NEXT: Finish Remove Item
-    // INPUT: groupTheme,
-    // OUTPUT
-    // Modify targetGroup
-
-    // Push new members
+    const updatedGroupMembers = currentGroupMembers.concat(new_members_ids);
+    targetGroup.members_ids = updatedGroupMembers;
 
     // 4.  update db
-    /*     await JoinCode.update(
+    await JoinCode.update(
       { _id: req.params.joincodeid },
       {
         $set: { group_themes: allCurrentGroupThemes }
       }
-    ); */
+    );
 
     res.status(200).send(currentGroupMembers);
   } catch (err) {
@@ -478,7 +469,60 @@ router.put("/add-students-to-group/:joincodeid", async (req, res) => {
   }
 });
 
-router.put("/remove-student-from-group/:joincodeid", async (req, res) => {});
+router.put("/remove-student-from-group/:joincodeid", async (req, res) => {
+  /*   { "group_theme_id":"5d82deaa7261e77b60fa4a07",
+         "group_id": "5d82e11eb4fddd7dfbeceae8", 
+         "members_id": ""
+        } 
+  */
+  const joincode = await JoinCode.findById(req.params.joincodeid);
+  const { new_members_ids } = req.body;
+  console.log(
+    " 😮😮😮 Remove single student from group 😮😮😮 ==>",
+    new_members_ids
+  );
+
+  try {
+    const { group_theme_id, group_id } = req.body;
+    const allCurrentGroupThemes = joincode.group_themes;
+    const groupThemeToUpdate = await allCurrentGroupThemes.id(group_theme_id);
+
+    // Get array of the groups and targetGroup
+    const allGroups = groupThemeToUpdate.groups;
+    const targetGroup = allGroups.id(group_id);
+    const currentGroupMembers = targetGroup.members_ids;
+    // LATER: check to see if any members being added are already present.
+    // indexOF or find
+
+    const updatedGroupMembers = currentGroupMembers.concat(new_members_ids);
+    targetGroup.members_ids = updatedGroupMembers;
+
+    console.log("allGroups ====>>>", allGroups.toObject());
+    // add updated group members to groupTheme
+
+    // Remove currentGroupTheme - not needed. All changes by referenc
+    /*     const { modifiedGroupThemes, itemDeleted } = removeItemGroupTheme(
+     allCurrentGroupThemes,
+     group_theme_id
+   );
+*/
+    // Push new members?
+
+    // 4.  update db
+    await JoinCode.update(
+      { _id: req.params.joincodeid },
+      {
+        $set: { group_themes: allCurrentGroupThemes }
+      }
+    );
+
+    res.status(200).send(currentGroupMembers);
+  } catch (err) {
+    console.log("❌❌ Error updating group new students ❌❌", err.message);
+    console.log(err);
+    res.status(404).send(err.message);
+  }
+});
 
 router.put("/edit-group/:joincodeid", async (req, res) => {
   console.log("✏️✏️✏️ Edit Group ✏️✏️✏️", req.body);
