@@ -472,15 +472,12 @@ router.put("/add-students-to-group/:joincodeid", async (req, res) => {
 router.put("/remove-student-from-group/:joincodeid", async (req, res) => {
   /*   { "group_theme_id":"5d82deaa7261e77b60fa4a07",
          "group_id": "5d82e11eb4fddd7dfbeceae8", 
-         "members_id": ""
+         "member_id": ""
         } 
   */
   const joincode = await JoinCode.findById(req.params.joincodeid);
-  const { new_members_ids } = req.body;
-  console.log(
-    " 😮😮😮 Remove single student from group 😮😮😮 ==>",
-    new_members_ids
-  );
+  const { member_id } = req.body;
+  console.log(" 😮😮😮 Remove single student from group 😮😮😮 ==>", member_id);
 
   try {
     const { group_theme_id, group_id } = req.body;
@@ -491,24 +488,16 @@ router.put("/remove-student-from-group/:joincodeid", async (req, res) => {
     const allGroups = groupThemeToUpdate.groups;
     const targetGroup = allGroups.id(group_id);
     const currentGroupMembers = targetGroup.members_ids;
-    // LATER: check to see if any members being added are already present.
-    // indexOF or find
 
-    const updatedGroupMembers = currentGroupMembers.concat(new_members_ids);
+    const modifiedGroup = _.remove(currentGroupMembers, function(item) {
+      return item.toString() !== member_id;
+    });
+
+    const updatedGroupMembers = modifiedGroup;
     targetGroup.members_ids = updatedGroupMembers;
 
     console.log("allGroups ====>>>", allGroups.toObject());
-    // add updated group members to groupTheme
 
-    // Remove currentGroupTheme - not needed. All changes by referenc
-    /*     const { modifiedGroupThemes, itemDeleted } = removeItemGroupTheme(
-     allCurrentGroupThemes,
-     group_theme_id
-   );
-*/
-    // Push new members?
-
-    // 4.  update db
     await JoinCode.update(
       { _id: req.params.joincodeid },
       {
