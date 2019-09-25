@@ -10,7 +10,66 @@ const removeItemGroupTheme = require("./helpers/removeItem.js");
 
 const router = express.Router();
 
+router.get("/all/", async (req, res) => {
+  console.log("🔮🔮🔮JOINCODE GET ALL 🔮🔮🔮");
+
+  const joincodes = await JoinCode.find()
+    .select("grade_level")
+    .select("class_description")
+    .select("teacher_name")
+    .select("special_notes")
+    .select("teacher_id")
+    .populate(
+      "students_tentative",
+      "-updated -created -__v -current_groups -current_classes -tentative_classes"
+    );
+  //   "teacher_name grade_level -_id class_description"
+  // )
+  // .populate(
+  //   "current_classes",
+  //   "teacher_name grade_level -_id class_description"
+  // );
+
+  if (!joincodes) {
+    console.log("❌❌❌❌ No joincodes found ❌❌❌❌");
+    return res.status(404).send("No joincodes found");
+  }
+
+  res.send(joincodes);
+});
+
+router.get("/single/:joincodeid", async (req, res) => {
+  console.log("🎃🎃🎃 GET SINGLE JOINCODE 🎃🎃🎃");
+
+  const joincode = await JoinCode.find({ _id: req.params.joincodeid });
+  if (!joincode || !joincode[0]) {
+    console.log("❌❌ No joincode found ❌❌");
+    return res.status(404).send("joincode not found.");
+  }
+  res.status(200).send(joincode);
+  // res.status(200).send(joincode[0].groups);
+
+  /*   const joincode = await JoinCode.find()
+    .select("grade_level")
+    .select("class_description")
+    .select("teacher_name")
+    .select("special_notes")
+    .select("teacher_id")
+    .populate(
+      "students_tentative",
+      "-updated -created -__v -current_groups -current_classes -tentative_classes"
+    );
+
+  if (!joincode) {
+    console.log("❌❌❌❌ No joincode found ❌❌❌❌");
+    return res.status(404).send("No joincode found");
+  }
+ */
+});
+
 // FIND BY JOINCODE (6 digit NOT user id as indicated by :id)
+// BUG! if left alone, the user could enter 'all' and trigger /all/ path above
+//      make this /jc/:join_code
 router.get("/:join_code", async (req, res) => {
   // NEEDS try/catch
   const joincode = await JoinCode.find(req.params);
@@ -165,7 +224,7 @@ router.put("/add-grouptheme/:joincodeid", async (req, res) => {
   }
 });
 
-//REMOVE GROUPTHEME
+// REMOVE GROUPTHEME
 router.put("/remove-grouptheme/:joincodeid", async (req, res) => {
   // id of group to remove is req.body.group_theme_id
   console.log("⛔️⛔️⛔️REMOVE groupTheme ⛔️⛔️⛔️  ");
@@ -197,6 +256,7 @@ router.put("/remove-grouptheme/:joincodeid", async (req, res) => {
   }
 });
 
+// EDIT GROUPTHEME
 router.put("/edit-grouptheme/:joincodeid", async (req, res) => {
   console.log("🚧🚧🚧 EDIT groupTheme  🚧🚧🚧 ");
   const joincode = await JoinCode.findById(req.params.joincodeid);
@@ -233,10 +293,10 @@ router.put("/edit-grouptheme/:joincodeid", async (req, res) => {
   }
 });
 
-// SET CURRENT THEME
-router.put("/set-current-grouptheme/:id", async (req, res) => {
+// SET CURRENT GROUPTHEME - ORIG
+router.put("/set-current-grouptheme_ORIG/:id", async (req, res) => {
   // Expects: req.body.group_theme_id / LATER :id should be :joincode_id
-  console.log("🐥🐥🐥 Set CURRENT theme group  🐥🐥🐥 ", req.body);
+  console.log("🐥🐥🐥 (orig) Set CURRENT theme group  🐥🐥🐥 ", req.body);
   const joincode = await JoinCode.findById(req.params.id);
 
   // check if id exists subdoc array group_themes
@@ -253,6 +313,45 @@ router.put("/set-current-grouptheme/:id", async (req, res) => {
     res.status(404).send(err.message);
   }
 });
+
+// SET CURRENT THEME
+// iterate through all groups in the theme and update student basic info
+//  -- name, motto, urls
+router.put("/set-current-grouptheme/:groupid", async (req, res) => {
+  console.log("🐥🐥🐥 Set CURRENT theme group  🐥🐥🐥 ", req.body);
+  const joincode = await JoinCode.findById(req.params.groupid);
+
+  try {
+    const { group_theme_id } = req.body;
+    const groupTheme = await joincode.group_themes.id(group_theme_id);
+
+    // simply set id (remove later?)
+    joincode.group_themes_current_id = groupTheme._id;
+
+    const groupsToPopulate = groupTheme.groups;
+    console.log("groupsToPopulate===>", groupsToPopulate.toObject());
+    groupsToPopulate.forEach((e, i) => {
+      console.log(e.group_points, i);
+      // iterate over each members_id array
+      // set "members_populated":  {}
+    });
+
+    joincode.group_themes_current_populated = groupTheme;
+
+    joincode.save();
+    res.status(200).send(groupTheme);
+  } catch (err) {
+    console.log(
+      "❌❌ Invalid group_theme ID. Can not set current group theme ❌❌"
+    );
+    res.status(404).send(err.message);
+  }
+});
+
+// POPULATE ON LOG-IN / CHRON JOB
+// this checks arras "students_confirmed": [] &  "students_tentative": []
+// and populated
+router.put("/populate-joincode-members/:joincodeid", async (req, res) => {});
 
 // ADD GROUP TO THEME
 router.put("/add-group-to-grouptheme/:joincodeid", async (req, res) => {

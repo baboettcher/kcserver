@@ -75,7 +75,7 @@ const JoinCodeSchema = new Schema({
   teacher_name: {
     type: String,
     required: [true, "teacher_name field is required"]
-  }, // later get this from populated from teacher_id
+  }, // **LATER: teacher_name: [{ type: Schema.ObjectId, ref: "teacher" }]
 
   teacher_id: {
     type: String,
@@ -87,13 +87,13 @@ const JoinCodeSchema = new Schema({
 
   school_name: {
     type: String
-  }, // later get this populated from school_id
+  }, // **LATER: school: [{ type: Schema.ObjectId, ref: "school" }]
   school_id: {
     type: String
   },
   district_name: {
     type: String
-  }, // later get this populated from district_id
+  }, // **LATER:  district_name: [{ type: Schema.ObjectId, ref: "district" }]
   district_id: {
     type: String
   },
