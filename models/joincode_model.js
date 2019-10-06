@@ -82,8 +82,10 @@ const JoinCodeSchema = new Schema({
     required: [true, "teacher_id field is required"]
   },
 
-  students_tentative: [{ type: Schema.ObjectId, ref: "student" }], // populate on login and used to populate groups
-  students_confirmed: [{ type: Schema.ObjectId, ref: "student" }], // later swtich to this
+  students_tentative: [{ type: Schema.ObjectId, ref: "student" }],
+  students_tentative_cache: [],
+  students_confirmed: [{ type: Schema.ObjectId, ref: "student" }],
+  students_confirmed_cache: [],
 
   school_name: {
     type: String
@@ -103,7 +105,7 @@ const JoinCodeSchema = new Schema({
   group_themes: { type: [GroupThemeSchema], default: [] },
   group_themes_current_id: { type: String, default: "" },
   group_themes_current_populated: {
-    // HOW much will be populated?c current theme and all students?
+    // How often is this updated?
     type: Object,
     default: { defaultSet: false }
   }

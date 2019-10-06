@@ -41,30 +41,41 @@ router.get("/all/", async (req, res) => {
 router.get("/single/:joincodeid", async (req, res) => {
   console.log("🎃🎃🎃 GET SINGLE JOINCODE 🎃🎃🎃");
 
-  const joincode = await JoinCode.find({ _id: req.params.joincodeid });
-  if (!joincode || !joincode[0]) {
-    console.log("❌❌ No joincode found ❌❌");
-    return res.status(404).send("joincode not found.");
-  }
-  res.status(200).send(joincode);
-  // res.status(200).send(joincode[0].groups);
-
-  /*   const joincode = await JoinCode.find()
+  // FRIDAY EVENING
+  // 1. One GET route to send back all the data of ONE joincode grouptheme, with updated group
+  //       OR
+  //    A PUT route which iterates over the populate-the-students which first updates the groups in the grouptheme, and then returns updated groupTheme info
+  //
+  // 2. Another route populate-the-students to update the array of students (tentative and confirmed) to be used with
+  //
+  //
+  const joincode = await JoinCode.find({ _id: req.params.joincodeid })
     .select("grade_level")
     .select("class_description")
     .select("teacher_name")
     .select("special_notes")
     .select("teacher_id")
-    .populate(
-      "students_tentative",
-      "-updated -created -__v -current_groups -current_classes -tentative_classes"
-    );
+    .select("group_themes_current_populated");
+  //    -date_updated -date_created -__v -current_groups -current_classes -tentative_classes
+  // .populate(
+  //   "students_tentative",
+  //   "-updated -created -__v -current_groups -current_classes -tentative_classes"
+  // );
 
-  if (!joincode) {
-    console.log("❌❌❌❌ No joincode found ❌❌❌❌");
-    return res.status(404).send("No joincode found");
+  //   "teacher_name grade_level -_id class_description"
+  // )
+  // .populate(
+  //   "current_classes",
+  //   "teacher_name grade_level -_id class_description"
+  // );
+
+  if (!joincode || !joincode[0]) {
+    console.log("❌❌ No joincode found ❌❌");
+    return res.status(404).send("joincode not found.");
   }
- */
+
+  res.status(200).send(joincode);
+  // res.status(200).send(joincode[0].groups);
 });
 
 // FIND BY JOINCODE (6 digit NOT user id as indicated by :id)
@@ -647,6 +658,101 @@ router.put("/edit-group/:joincodeid", async (req, res) => {
   }
 });
 
+router.put("/update-all-student-data/:joincodeid", async (req, res) => {
+  console.log(" 📕📗📘 Updating all student data 📕📗📘 ");
+  try {
+    const joincode = await JoinCode.findById(req.params.joincodeid)
+      .select("grade_level")
+      .select("class_description")
+      .select("teacher_name")
+      .select("special_notes")
+      .select("teacher_id")
+      .populate(
+        "students_tentative",
+        "-updated -created -__v -current_groups -current_classes -tentative_classes"
+      )
+      .populate(
+        "students_confirmed",
+        "-updated -created -__v -current_groups -current_classes -tentative_classes"
+      );
+
+    const updated_students_tentative = joincode.toObject().students_tentative;
+    console.log("updated_students_tentative--->", updated_students_tentative);
+    // update cache
+    joincode.students_tentative_cache = updated_students_tentative;
+
+    const updated_students_confirmed = joincode.toObject().students_confirmed;
+    console.log("updated_students_confirmed--->", updated_students_confirmed);
+    // update cache
+    joincode.students_confirmed_cache = updated_students_confirmed;
+
+    joincode.save();
+
+    res.status(200).send(joincode);
+  } catch (err) {
+    console.log("❌❌ Error updating group new students ❌❌", err.message);
+    console.log(err);
+    res.status(404).send(err.message);
+  }
+});
+
+router.put(
+  "/update-all-group-data-within-grouptheme/:joincodeid",
+  async (req, res) => {
+    console.log("🎉🎉🎉 Updating all groups, member in a grouptheme 🎉🎉🎉");
+    try {
+      const joincode = await JoinCode.findById(req.params.joincodeid);
+      const { students_tentative_cache } = joincode;
+      const allCurrentGroupThemes = joincode.group_themes;
+      const { group_theme_id } = req.body;
+
+      // 1. get groupThemeToUpdate
+      const groupThemeToUpdate = await allCurrentGroupThemes.id(group_theme_id);
+      console.log(
+        "groupThemeToUpdate.name===>>>",
+        groupThemeToUpdate.toObject().name
+      );
+      // 2. Get array of the groups from group_themes
+      const allGroups = groupThemeToUpdate.groups;
+      console.log("allGroups==>", allGroups.toObject());
+
+      // 3. This is array of all students in this joincode. Use this.
+      console.log(
+        "This is array of all students in this joincode, students_tentative_cache. ",
+        students_tentative_cache.toObject()
+      );
+
+      // ITERATE OVER ALL GROUPS
+      // Group "Golden" should populate with Mar and Fabio
+
+      // forEach over allGroups
+      // forEach over members_ids
+      // clear members_populated; add console.log()
+      // if member_id exists in students_tentative_cache (it should)
+      // push to members_populated
+      // else console.log("USER NOT FOUND IN TENTATIVE or CONFIRMED LISTS")
+      // remove from list?
+      // add to log somewhere?
+
+      // 4.  update db
+      // await JoinCode.update(
+      //   { _id: req.params.joincodeid },
+      //   {
+      //     $set: { group_themes: allCurrentGroupThemes }
+      //   }
+      // );
+
+      res.status(200).send(joincode);
+    } catch (err) {
+      console.log("❌❌ Error updating grouptheme data ❌❌", err.message);
+      console.log(err);
+      res.status(404).send(err.message);
+    }
+  }
+);
+
+//
+
 /* 
       ADD/REMOVE STUDENT expects:
       :id - id
@@ -664,7 +770,6 @@ add-student-to-group
 remove-student-from-group
 edit-group-info 
 
--->> populate!! -- how and when??
  
 get groupthemes (for use in menu)
  */
@@ -676,11 +781,7 @@ get groupthemes (for use in menu)
   res.send(joincode);
 });
 
-router.get("/", async (req, res) => {
-  console.log("GET all joincodes");
-  const joincodes = await JoinCode.find().sort("name");
-  res.send(joincodes);
-});  
+
  */
 
 function validateJoinCode(joincode) {
@@ -692,7 +793,9 @@ function validateJoinCode(joincode) {
     teacher_id: Joi.string().required(),
 
     students_tentative: Joi.array(),
+    students_tentative_cache: Joi.array(),
     students_confirmed: Joi.array(),
+    students_confirmed_cache: Joi.array(),
 
     school_name: Joi.string().allow(""),
     school_id: Joi.string().allow(""),
