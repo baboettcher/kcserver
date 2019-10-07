@@ -699,40 +699,70 @@ router.put("/update-all-student-data/:joincodeid", async (req, res) => {
 router.put(
   "/update-all-group-data-within-grouptheme/:joincodeid",
   async (req, res) => {
-    console.log("🎉🎉🎉 Updating all groups, member in a grouptheme 🎉🎉🎉");
     try {
       const joincode = await JoinCode.findById(req.params.joincodeid);
       const { students_tentative_cache } = joincode;
       const allCurrentGroupThemes = joincode.group_themes;
       const { group_theme_id } = req.body;
+      const allTenativeStudents = students_tentative_cache.toObject();
+      // const allConfirmedStudents = students_confirmed_cache.toObject();
+      console.log(
+        "This is array of all students in this joincode, students_tentative_cache: ",
+        allTenativeStudents,
+        Array.isArray(allTenativeStudents)
+      );
 
       // 1. get groupThemeToUpdate
       const groupThemeToUpdate = await allCurrentGroupThemes.id(group_theme_id);
       console.log(
-        "groupThemeToUpdate.name===>>>",
+        "🎉🎉🎉 Updating all groups, subsequent members, in grouptheme 🎉🎉:  ",
         groupThemeToUpdate.toObject().name
       );
+
       // 2. Get array of the groups from group_themes
-      const allGroups = groupThemeToUpdate.groups;
-      console.log("allGroups==>", allGroups.toObject());
+      const allGroups = groupThemeToUpdate.groups.toObject();
+      const iterator = allGroups[Symbol.iterator]();
+      let item = {
+        value: 1,
+        done: false
+      };
+      let updatedMemberIds;
 
+      while (item.done === false) {
+        updatedMemberIds = [];
+
+        item = iterator.next();
+        if (!item.value) {
+          break;
+        }
+
+        console.log("title: ", item.value.title);
+        console.log(
+          "ITEM.VALUE.MEMBERS_IDS============>",
+          item.value.members_ids,
+          "\n"
+        );
+        item.value.members_ids.forEach(memberId => {
+          // check against allTenativeStudents
+          console.log("memberId:", memberId);
+
+          const checkForStudent = _.find(allTenativeStudents, {
+            _id: memberId.toString()
+          });
+
+          console.log("checkForStudent==>>", checkForStudent);
+          // push to array!
+        });
+
+        console.log("ITEM.DONE:", item.done);
+        console.log("\n");
+      }
+      //console.log(_.find(allTenativeStudents, { first_name: "Fabio" }));
+      //console.log(set.has(65));
+
+      // console.log("allGroups===>", allGroups);
+      // console.log("allGroups===>", Array.isArray(allGroups));
       // 3. This is array of all students in this joincode. Use this.
-      console.log(
-        "This is array of all students in this joincode, students_tentative_cache. ",
-        students_tentative_cache.toObject()
-      );
-
-      // ITERATE OVER ALL GROUPS
-      // Group "Golden" should populate with Mar and Fabio
-
-      // forEach over allGroups
-      // forEach over members_ids
-      // clear members_populated; add console.log()
-      // if member_id exists in students_tentative_cache (it should)
-      // push to members_populated
-      // else console.log("USER NOT FOUND IN TENTATIVE or CONFIRMED LISTS")
-      // remove from list?
-      // add to log somewhere?
 
       // 4.  update db
       // await JoinCode.update(
