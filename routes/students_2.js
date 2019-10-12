@@ -51,7 +51,7 @@ router.get("/:fb_uid", async (req, res) => {
       .send("Student not found w/ fb_uid ", req.params.fb_uid);
   }
 
-  console.log("STUDENT ===>>", student);
+  console.log("STUDENT ===>>", student[0].toObject());
   res.send(student);
 });
 
@@ -72,7 +72,7 @@ router.post("/", async (req, res) => {
 
 // PUSH NEW CLASS(ADDCODE) TO ARRAY
 router.put("/addtentativeclass/:id", async (req, res) => {
-  console.log("🆔🆔🆔 STUDENT PUT - ADD TENTATIVE CLASS  🆔🆔🆔");
+  console.log("♒️♒️♒️ STUDENT PUT - ADD TENTATIVE CLASS  ♒️♒️♒️");
   // Need to validate joincode
   // const { error } = validateAddCode(req.body);
   // if (error) return res.status(400).send(error.details[0].message);
@@ -82,7 +82,7 @@ router.put("/addtentativeclass/:id", async (req, res) => {
   const tentative_classes = checkTentativeClasses.toObject().tentative_classes;
   // #2a If already present in array, send back 404 (CHANGE THIS LATER)
   if (tentative_classes.some(e => e == req.body._id)) {
-    console.log("CLASS ALREADY PRESENT IN STUDENT ARRAY");
+    console.log("CLASS ALREADY PRESENT IN STUDENT tentative_classes ARRAY");
     res.send(checkTentativeClasses).status(404); // what should response be? 404 doesn't signal error/catch block
   } else {
     // #2b Push to student array (FIX THIS. SHOULD NOT NEED 2nd DB CALL)
@@ -103,9 +103,6 @@ router.put("/addtentativeclass/:id", async (req, res) => {
       },
       { new: true } //adds new data to response
     );
-
-    // const TEMP_STUDENT = await student.toJSON();
-    //console.log("👛👛👛👛👛👛TEMP_STUDENT==========>", TEMP_STUDENT);
 
     if (!student) {
       console.log("❌❌ Problem updating record ❌❌");

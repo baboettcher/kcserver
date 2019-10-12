@@ -676,15 +676,30 @@ router.put("/update-all-student-data/:joincodeid", async (req, res) => {
         "-updated -created -__v -current_groups -current_classes -tentative_classes"
       );
 
+    //  TENATIVE
+    //const updated_students_tentative = joincode.toObject().students_tentative;
     const updated_students_tentative = joincode.toObject().students_tentative;
-    console.log("updated_students_tentative--->", updated_students_tentative);
-    // update cache
-    joincode.students_tentative_cache = updated_students_tentative;
 
+    // update tentative cache
+    console.log("=====UPDATED CACHE===>>>>", updated_students_tentative);
+    console.log("========LENGTH====>>>>", updated_students_tentative.length);
+
+    /*     updated_students_tentative.forEach((e, i) =>
+      console.log("NO:", i, JSON.stringify(e))
+    ); */
+    const updated_students_tentative_SF = updated_students_tentative.map(e =>
+      JSON.stringify(e)
+    );
+
+    // here we could iterate over the array and use JSON.stringify on _.id
+
+    joincode.students_tentative_cache = updated_students_tentative_SF;
+
+    //  CONFIRMED
     const updated_students_confirmed = joincode.toObject().students_confirmed;
     console.log("updated_students_confirmed--->", updated_students_confirmed);
-    // update cache
-    joincode.students_confirmed_cache = updated_students_confirmed;
+    // update confirmed cache
+    joincode.students_confirmed_cache = updated_students_confirmed.toString();
 
     joincode.save();
 
@@ -701,18 +716,21 @@ router.put(
   async (req, res) => {
     try {
       const joincode = await JoinCode.findById(req.params.joincodeid);
+      const { group_theme_id } = req.body;
       const { students_tentative_cache } = joincode;
       const allCurrentGroupThemes = joincode.group_themes;
-      const { group_theme_id } = req.body;
-      const allTenativeStudents = students_tentative_cache.toObject();
-      // const allConfirmedStudents = students_confirmed_cache.toObject();
-      console.log(
-        "This is array of all students in this joincode, students_tentative_cache: ",
-        allTenativeStudents,
-        Array.isArray(allTenativeStudents)
-      );
+      //const allTenativeStudents = students_tentative_cache.toObject();
+      let allTenativeStudents = students_tentative_cache.toObject();
 
-      // 1. get groupThemeToUpdate
+      console.log("+++++++++ PRE ATS ++++++", allTenativeStudents);
+
+      allTenativeStudents = allTenativeStudents.map(item => JSON.parse(item));
+
+      console.log("+++++++++ PARSED ATS ++++++", allTenativeStudents);
+
+      // NEXT: Stringify EACH OBJECT WHEN WRITING THE CAHCE
+      // THEN here, parse EACH
+
       const groupThemeToUpdate = await allCurrentGroupThemes.id(group_theme_id);
       console.log(
         "🎉🎉🎉 Updating all groups, subsequent members, in grouptheme 🎉🎉:  ",
@@ -720,7 +738,9 @@ router.put(
       );
 
       // 2. Get array of the groups from group_themes
+      // these will br checked against stringifed cache
       const allGroups = groupThemeToUpdate.groups.toObject();
+
       const iterator = allGroups[Symbol.iterator]();
       let item = {
         value: 1,
@@ -728,10 +748,18 @@ router.put(
       };
       let updatedMemberIds;
 
+      console.log("\nallGroups[0]*******>>>>>", allGroups[0]);
+      console.log("allGroups[0]._id*******>>>>>", allGroups[0]._id);
+      console.log(
+        "typeof allGroups[0]._id*******>>>>>",
+        typeof allGroups[0]._id
+      );
+      // ITERATE USING WTF is up with _.find or forEach??!
       while (item.done === false) {
         updatedMemberIds = [];
 
         item = iterator.next();
+
         if (!item.value) {
           break;
         }
@@ -744,14 +772,29 @@ router.put(
         );
         item.value.members_ids.forEach(memberId => {
           // check against allTenativeStudents
-          console.log("memberId:", memberId);
 
           const checkForStudent = _.find(allTenativeStudents, {
             _id: memberId.toString()
           });
+          /*        const checkForStudent = _.find(allTenativeStudents, {
+            _id: memberId
+          }); */
+          /*      const checkForStudent = allTenativeStudents.find({
+            _id: memberId
+          });
+ */
 
-          console.log("checkForStudent==>>", checkForStudent);
-          // push to array!
+          /*          const checkForStudent2 = _.find(allTenativeStudents, {
+                _id: {
+                  $oid: memberId.toString()
+                }
+              });
+              */
+
+          console.log("!!!===memberId:", memberId);
+          console.log("!!!typeof ===memberId:", typeof memberId);
+          console.log("!!!===checkForStudent==>>", checkForStudent);
+          // Push to array
         });
 
         console.log("ITEM.DONE:", item.done);
@@ -780,29 +823,6 @@ router.put(
     }
   }
 );
-
-//
-
-/* 
-      ADD/REMOVE STUDENT expects:
-      :id - id
-      { group_theme_id: abc123,
-      group_id: abc123,
-      students : [] <--- concat to this array
-      }
-  */
-
-// NEXT:
-/* 
-
-subtract-group-points 
-add-student-to-group
-remove-student-from-group
-edit-group-info 
-
- 
-get groupthemes (for use in menu)
- */
 
 /* router.delete("/:id", async (req, res) => {
   const joincode = await JoinCode.findByIdAndRemove(req.params.id);

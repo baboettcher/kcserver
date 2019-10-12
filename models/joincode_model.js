@@ -83,6 +83,9 @@ const JoinCodeSchema = new Schema({
   },
 
   students_tentative: [{ type: Schema.ObjectId, ref: "student" }],
+  // Adding schema reference interfers with caching,
+  //students_tentative_cache: [{ type: Schema.ObjectId, ref: "student" }],
+  // so an empty array is used here:
   students_tentative_cache: [],
   students_confirmed: [{ type: Schema.ObjectId, ref: "student" }],
   students_confirmed_cache: [],
