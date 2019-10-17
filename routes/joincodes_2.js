@@ -551,6 +551,7 @@ router.put("/add-students-to-group/:joincodeid", async (req, res) => {
   try {
     const { group_theme_id, group_id } = req.body;
     const allCurrentGroupThemes = joincode.group_themes;
+    //remove await?
     const groupThemeToUpdate = await allCurrentGroupThemes.id(group_theme_id);
 
     // Get array of the groups and targetGroup
@@ -711,6 +712,7 @@ router.put("/update-all-student-data/:joincodeid", async (req, res) => {
   }
 });
 
+// ----- NEW VERSION! ----- remove iterator and use .forEach
 router.put(
   "/update-all-group-data-within-grouptheme/:joincodeid",
   async (req, res) => {
@@ -719,101 +721,70 @@ router.put(
       const { group_theme_id } = req.body;
       const { students_tentative_cache } = joincode;
       const allCurrentGroupThemes = joincode.group_themes;
-      //const allTenativeStudents = students_tentative_cache.toObject();
-      let allTenativeStudents = students_tentative_cache.toObject();
+      let allTenativeStudentsInJoincode = students_tentative_cache.toObject();
 
-      console.log("+++++++++ PRE ATS ++++++", allTenativeStudents);
+      allTenativeStudentsInJoincode = allTenativeStudentsInJoincode.map(item =>
+        JSON.parse(item)
+      );
 
-      allTenativeStudents = allTenativeStudents.map(item => JSON.parse(item));
+      // this updated on log-in or groupTheme change
+      console.log(
+        "PARSED allTenativeStudentsInJOINCODE:",
+        allTenativeStudentsInJoincode
+      );
 
-      console.log("+++++++++ PARSED ATS ++++++", allTenativeStudents);
-
-      // NEXT: Stringify EACH OBJECT WHEN WRITING THE CAHCE
-      // THEN here, parse EACH
-
-      const groupThemeToUpdate = await allCurrentGroupThemes.id(group_theme_id);
+      const groupThemeToUpdate = allCurrentGroupThemes.id(group_theme_id);
       console.log(
         "🎉🎉🎉 Updating all groups, subsequent members, in grouptheme 🎉🎉:  ",
         groupThemeToUpdate.toObject().name
       );
 
-      // 2. Get array of the groups from group_themes
-      // these will br checked against stringifed cache
-      const allGroups = groupThemeToUpdate.groups.toObject();
+      // 2. Get array of the groups from group_themes to be updated using allTenativeStudentsInJOINCODE
 
-      const iterator = allGroups[Symbol.iterator]();
-      let item = {
-        value: 1,
-        done: false
-      };
-      let updatedMemberIds;
+      const allGroups = groupThemeToUpdate.groups;
 
-      console.log("\nallGroups[0]*******>>>>>", allGroups[0]);
-      console.log("allGroups[0]._id*******>>>>>", allGroups[0]._id);
-      console.log(
-        "typeof allGroups[0]._id*******>>>>>",
-        typeof allGroups[0]._id
-      );
-      // ITERATE USING WTF is up with _.find or forEach??!
-      while (item.done === false) {
-        updatedMemberIds = [];
+      let updatedMemberIdsPerGroup = [];
+      // here we do the work on allGroups[i]
+      allGroups.forEach((group, i) => {
+        updatedMemberIdsPerGroup = [];
+        // clear for each group
 
-        item = iterator.next();
-
-        if (!item.value) {
-          break;
-        }
-
-        console.log("title: ", item.value.title);
         console.log(
-          "ITEM.VALUE.MEMBERS_IDS============>",
-          item.value.members_ids,
+          "MEMBERS_IDS in",
+          group.title,
+          ":",
+          group.members_ids,
           "\n"
         );
-        item.value.members_ids.forEach(memberId => {
-          // check against allTenativeStudents
-
-          const checkForStudent = _.find(allTenativeStudents, {
-            _id: memberId.toString()
-          });
-          /*        const checkForStudent = _.find(allTenativeStudents, {
-            _id: memberId
-          }); */
-          /*      const checkForStudent = allTenativeStudents.find({
+        // iterate over the members in each group
+        group.members_ids.forEach(memberId => {
+          const updatedStudentData = _.find(allTenativeStudentsInJoincode, {
             _id: memberId
           });
- */
 
-          /*          const checkForStudent2 = _.find(allTenativeStudents, {
-                _id: {
-                  $oid: memberId.toString()
-                }
-              });
-              */
-
-          console.log("!!!===memberId:", memberId);
-          console.log("!!!typeof ===memberId:", typeof memberId);
-          console.log("!!!===checkForStudent==>>", checkForStudent);
-          // Push to array
+          updatedStudentData.first_name = updatedStudentData.first_name + "!";
+          console.log("!!! ===memberId:", memberId);
+          console.log("!!! ===updatedStudentData==>>", updatedStudentData);
+          updatedMemberIdsPerGroup.push(updatedStudentData);
         });
 
-        console.log("ITEM.DONE:", item.done);
-        console.log("\n");
-      }
-      //console.log(_.find(allTenativeStudents, { first_name: "Fabio" }));
-      //console.log(set.has(65));
+        // update group with member data from cache
 
-      // console.log("allGroups===>", allGroups);
-      // console.log("allGroups===>", Array.isArray(allGroups));
-      // 3. This is array of all students in this joincode. Use this.
+        allGroups[i].members_populated = updatedMemberIdsPerGroup;
+      });
 
-      // 4.  update db
-      // await JoinCode.update(
-      //   { _id: req.params.joincodeid },
-      //   {
-      //     $set: { group_themes: allCurrentGroupThemes }
-      //   }
-      // );
+      console.log(
+        "***> allCurrentGroupThemes[0]:",
+        allCurrentGroupThemes.toObject()[0]
+      );
+
+      //4.  update db // add param to reutrn object with the changes
+      await JoinCode.update(
+        { _id: req.params.joincodeid },
+        {
+          $set: { group_themes: allCurrentGroupThemes }
+        }
+      );
 
       res.status(200).send(joincode);
     } catch (err) {
