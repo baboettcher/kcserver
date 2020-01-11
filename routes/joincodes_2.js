@@ -712,7 +712,6 @@ router.put("/update-all-student-data/:joincodeid", async (req, res) => {
   }
 });
 
-// ----- NEW VERSION! ----- remove iterator and use .forEach
 router.put(
   "/update-all-group-data-within-grouptheme/:joincodeid",
   async (req, res) => {
