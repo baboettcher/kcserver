@@ -34,7 +34,11 @@ const StudentSchema = new Schema({
   },
   credits: { type: Number, default: 0 },
   updated: { type: Date, default: Date.now },
-  created: { type: Date, default: Date.now }
+  created: { type: Date, default: Date.now },
+  avatarId: {
+    type: String,
+    default: "new"
+  }
 });
 
 const Student = mongoose.model("student", StudentSchema);

@@ -34,7 +34,7 @@ router.get("/:fb_uid", async (req, res) => {
   console.log("🆔🆔🆔 STUDENT DASHBOARD 🆔🆔🆔", req.params);
 
   const student = await Student.find(req.params)
-    .select("first_name last_name credits")
+    .select("first_name last_name credits avatarId")
     .populate(
       "tentative_classes",
       "teacher_name grade_level -_id class_description"
