@@ -114,12 +114,21 @@ router.put("/addtentativeclass/:id", async (req, res) => {
   }
 });
 
-/* Models.post.Post.findOneAndUpdate({ _id: res._id }, { $inc: { views: 1 } }, {new: true },function(err, response) {
-  if (err) {
-  callback(err);
- } else {
-  callback(response);
- } */
+
+router.put("/updateavatar/:id", async (req, res) => {
+  //const { error } = validateStudent(req.body);
+  //if (error) return res.status(400).send(error.details[0].message);
+  const student = await Student.findByIdAndUpdate(
+    req.params.id, req.body,
+    {
+      new: true
+    }
+  );
+  if (!student)
+    return res.status(404).send("first_name with the given ID was not found.");
+  res.send(student);
+});
+
 
 router.put("/:id", async (req, res) => {
   const { error } = validateStudent(req.body);
