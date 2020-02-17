@@ -116,16 +116,30 @@ router.put("/addtentativeclass/:id", async (req, res) => {
 
 
 router.put("/updateavatar/:id", async (req, res) => {
+  console.log("🏁🏁🏁🏁🏁🏁🏁")
   //const { error } = validateStudent(req.body);
   //if (error) return res.status(400).send(error.details[0].message);
+  console.log("req.body", req.body)
+
   const student = await Student.findByIdAndUpdate(
-    req.params.id, req.body,
-    {
-      new: true
-    }
+    req.params.id, { $set: { avatarId: req.body.avatarId } },// HOW DO WE UPDATE THE AVATARID
+    { new: true }
   );
+
+  // Model.findByIdAndUpdate(id, { $set: { name: 'jason bourne' }}, options, callback)
+
+
+
+  /*   const student = await Student.findByIdAndUpdate(
+      req.params.id, req.body,
+      {
+        new: true
+      }
+    ); */
+
   if (!student)
     return res.status(404).send("first_name with the given ID was not found.");
+
   res.send(student);
 });
 
