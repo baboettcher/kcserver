@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/iamshaunjp/rest-api-playlist#readme",
   "dependencies": {
-    "@hapi/joi": "^15.1.0",
+    "@hapi/joi": "^15.1.1",
     "body-parser": "^1.16.1",
     "express": "^4.14.1",
     "joi": "^14.3.1",
