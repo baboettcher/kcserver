@@ -23,7 +23,7 @@
     "express": "^4.14.1",
     "joi": "^14.3.1",
     "lodash": "^4.17.15",
-    "mongoose": "^4.8.4",
+    "mongoose": "^4.13.21",
     "password-generator": "^2.2.0"
   }
 }
